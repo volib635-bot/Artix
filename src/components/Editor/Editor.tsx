@@ -1,0 +1,115 @@
+import { useState, useCallback } from 'react';
+import MonacoEditor from '@monaco-editor/react';
+import { EditorToolbar } from './EditorToolbar';
+import { DocumentFormat, getLanguageConfig } from './languageMap';
+import { useAutoSave, SaveStatus } from '@/lib/autosave';
+import { motion } from 'framer-motion';
+
+export interface Document {
+  id: string;
+  title: string;
+  content: string;
+  format: DocumentFormat;
+  updated_at: string;
+}
+
+interface EditorProps {
+  document: Document;
+  onSave: (doc: Partial<Document>) => Promise<void>;
+  onBack: () => void;
+}
+
+export function Editor({ document, onSave, onBack }: EditorProps) {
+  const [title, setTitle] = useState(document.title);
+  const [content, setContent] = useState(document.content);
+  const [format, setFormat] = useState<DocumentFormat>(document.format);
+
+  const handleSave = useCallback(
+    async (contentToSave: string) => {
+      await onSave({
+        id: document.id,
+        title,
+        content: contentToSave,
+        format,
+      });
+    },
+    [document.id, title, format, onSave]
+  );
+
+  const { status, triggerSave } = useAutoSave({
+    delay: 1500,
+    onSave: handleSave,
+  });
+
+  const handleContentChange = (value: string | undefined) => {
+    const newContent = value ?? '';
+    setContent(newContent);
+    triggerSave(newContent);
+  };
+
+  const handleFormatChange = (newFormat: DocumentFormat) => {
+    setFormat(newFormat);
+    // Trigger save with new format
+    onSave({
+      id: document.id,
+      format: newFormat,
+    });
+  };
+
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+  };
+
+  const handleManualSave = () => {
+    handleSave(content);
+  };
+
+  const languageConfig = getLanguageConfig(format);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="flex flex-col h-screen bg-editor"
+    >
+      <EditorToolbar
+        title={title}
+        format={format}
+        saveStatus={status}
+        onFormatChange={handleFormatChange}
+        onTitleChange={handleTitleChange}
+        onSave={handleManualSave}
+        onBack={onBack}
+      />
+
+      <div className="flex-1 overflow-hidden">
+        <MonacoEditor
+          height="100%"
+          language={languageConfig.monacoLanguage}
+          value={content}
+          onChange={handleContentChange}
+          theme="vs-dark"
+          options={{
+            fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+            fontSize: 14,
+            lineHeight: 24,
+            padding: { top: 16, bottom: 16 },
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            wordWrap: 'on',
+            lineNumbers: 'on',
+            renderLineHighlight: 'line',
+            cursorBlinking: 'smooth',
+            cursorSmoothCaretAnimation: 'on',
+            smoothScrolling: true,
+            tabSize: 2,
+            automaticLayout: true,
+            folding: true,
+            bracketPairColorization: { enabled: true },
+          }}
+        />
+      </div>
+    </motion.div>
+  );
+}
