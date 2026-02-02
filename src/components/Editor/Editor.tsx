@@ -1,9 +1,15 @@
 import { useState, useCallback } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { EditorToolbar } from './EditorToolbar';
+import { MarkdownPreview } from './MarkdownPreview';
 import { DocumentFormat, getLanguageConfig } from './languageMap';
 import { useAutoSave, SaveStatus } from '@/lib/autosave';
 import { motion } from 'framer-motion';
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from '@/components/ui/resizable';
 
 export interface Document {
   id: string;
@@ -84,31 +90,67 @@ export function Editor({ document, onSave, onBack }: EditorProps) {
       />
 
       <div className="flex-1 overflow-hidden">
-        <MonacoEditor
-          height="100%"
-          language={languageConfig.monacoLanguage}
-          value={content}
-          onChange={handleContentChange}
-          theme="vs-dark"
-          options={{
-            fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-            fontSize: 14,
-            lineHeight: 24,
-            padding: { top: 16, bottom: 16 },
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            wordWrap: 'on',
-            lineNumbers: 'on',
-            renderLineHighlight: 'line',
-            cursorBlinking: 'smooth',
-            cursorSmoothCaretAnimation: 'on',
-            smoothScrolling: true,
-            tabSize: 2,
-            automaticLayout: true,
-            folding: true,
-            bracketPairColorization: { enabled: true },
-          }}
-        />
+        {format === 'markdown' ? (
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel defaultSize={50} minSize={30}>
+              <MonacoEditor
+                height="100%"
+                language={languageConfig.monacoLanguage}
+                value={content}
+                onChange={handleContentChange}
+                theme="vs-dark"
+                options={{
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  fontSize: 14,
+                  lineHeight: 24,
+                  padding: { top: 16, bottom: 16 },
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  wordWrap: 'on',
+                  lineNumbers: 'on',
+                  renderLineHighlight: 'line',
+                  cursorBlinking: 'smooth',
+                  cursorSmoothCaretAnimation: 'on',
+                  smoothScrolling: true,
+                  tabSize: 2,
+                  automaticLayout: true,
+                  folding: true,
+                  bracketPairColorization: { enabled: true },
+                }}
+              />
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={50} minSize={20}>
+              <MarkdownPreview content={content} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          <MonacoEditor
+            height="100%"
+            language={languageConfig.monacoLanguage}
+            value={content}
+            onChange={handleContentChange}
+            theme="vs-dark"
+            options={{
+              fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+              fontSize: 14,
+              lineHeight: 24,
+              padding: { top: 16, bottom: 16 },
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              wordWrap: 'on',
+              lineNumbers: 'on',
+              renderLineHighlight: 'line',
+              cursorBlinking: 'smooth',
+              cursorSmoothCaretAnimation: 'on',
+              smoothScrolling: true,
+              tabSize: 2,
+              automaticLayout: true,
+              folding: true,
+              bracketPairColorization: { enabled: true },
+            }}
+          />
+        )}
       </div>
     </motion.div>
   );

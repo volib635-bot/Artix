@@ -65,6 +65,7 @@ export default {
           DEFAULT: "hsl(var(--editor-bg))",
           gutter: "hsl(var(--editor-gutter))",
           line: "hsl(var(--editor-line-highlight))",
+          preview: "hsl(var(--editor-preview))",
         },
         success: "hsl(var(--success))",
         warning: "hsl(var(--warning))",
@@ -111,5 +112,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;
