@@ -17,23 +17,23 @@ import {
 const features = [
   {
     icon: Code2,
-    title: 'Multi-Format Support',
+    title: 'Document Forge',
     description: 'Write in Markdown, XML, or plain text with syntax highlighting and intelligent formatting.',
   },
   {
     icon: Cloud,
-    title: 'Cloud Persistence',
-    description: 'Your documents are automatically saved to the cloud. Access them from anywhere.',
+    title: 'System Architect',
+    description: 'Design your system architecture with a visual canvas. Connect databases, servers, and services.',
   },
   {
     icon: Zap,
-    title: 'Auto-Save',
-    description: 'Never lose your work. Changes are saved automatically as you type.',
+    title: 'Project Management',
+    description: 'Organize all your work in projects. Keep documents and designs together in one place.',
   },
   {
     icon: Shield,
     title: 'Secure & Private',
-    description: 'Your documents are encrypted and only accessible by you.',
+    description: 'Your projects are encrypted and only accessible by you. Full ownership of your data.',
   },
 ];
 
@@ -99,13 +99,12 @@ const Index = () => {
             </motion.div>
 
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
-              The Modern Text Editor
-              <span className="block gradient-text">Built for Developers</span>
+              The Developer's
+              <span className="block gradient-text">Command Center</span>
             </h1>
 
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              A powerful, cloud-based editor that supports Markdown, XML, and plain text. 
-              Auto-save, syntax highlighting, and zero infrastructure cost.
+              Architect your systems, forge your documents, and manage your projects in one unified workspace.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -114,7 +113,7 @@ const Index = () => {
                 onClick={() => navigate('/auth?mode=signup')}
                 className="group text-base h-12 px-8 glow-amber"
               >
-                Start Writing Free
+                Start Building Free
                 <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
@@ -233,10 +232,10 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need
+              Power Tools for Developers
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              A complete text editing solution with powerful features and zero setup required.
+              Everything you need to document, design, and manage your projects.
             </p>
           </motion.div>
 
@@ -277,10 +276,10 @@ const Index = () => {
             
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Ready to Start Writing?
+                Ready to Take Command?
               </h2>
               <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-                Join thousands of developers who use TextForge to write, document, and collaborate.
+                Join developers who use TextForge to architect systems, write documentation, and manage their projects.
               </p>
               <Button 
                 size="lg" 

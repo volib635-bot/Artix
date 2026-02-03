@@ -4,20 +4,28 @@ import { useAuth } from './useAuth';
 import { Document } from '@/components/Editor/Editor';
 import { DocumentFormat } from '@/components/Editor/languageMap';
 
-export function useDocuments() {
+export function useDocuments(projectId?: string) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const documentsQuery = useQuery({
-    queryKey: ['documents', user?.id],
+    queryKey: ['documents', user?.id, projectId],
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('documents')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
+      
+      if (projectId) {
+        query = query.eq('project_id', projectId);
+      } else {
+        query = query.is('project_id', null);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
@@ -27,13 +35,14 @@ export function useDocuments() {
         content: doc.content,
         format: doc.format as DocumentFormat,
         updated_at: doc.updated_at,
+        project_id: doc.project_id,
       })) as Document[];
     },
     enabled: !!user,
   });
 
   const createDocumentMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (projectIdArg?: string) => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
@@ -43,6 +52,7 @@ export function useDocuments() {
           title: 'Untitled Document',
           content: '',
           format: 'markdown',
+          project_id: projectIdArg || null,
         })
         .select()
         .single();
@@ -54,10 +64,12 @@ export function useDocuments() {
         content: data.content,
         format: data.format as DocumentFormat,
         updated_at: data.updated_at,
+        project_id: data.project_id,
       } as Document;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 
@@ -88,6 +100,7 @@ export function useDocuments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 

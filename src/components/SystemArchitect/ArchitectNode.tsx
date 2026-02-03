@@ -1,0 +1,87 @@
+import { memo, useState } from 'react';
+import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Database, Server, Monitor, Cloud, Cpu, HardDrive } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Database,
+  Server,
+  Monitor,
+  Cloud,
+  Cpu,
+  HardDrive,
+};
+
+const colorMap: Record<string, string> = {
+  blue: 'bg-blue-500/20 border-blue-500/50 text-blue-400',
+  green: 'bg-green-500/20 border-green-500/50 text-green-400',
+  purple: 'bg-purple-500/20 border-purple-500/50 text-purple-400',
+  cyan: 'bg-cyan-500/20 border-cyan-500/50 text-cyan-400',
+  orange: 'bg-orange-500/20 border-orange-500/50 text-orange-400',
+  pink: 'bg-pink-500/20 border-pink-500/50 text-pink-400',
+};
+
+function ArchitectNodeComponent({ data, selected }: NodeProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [label, setLabel] = useState(data.label as string);
+
+  const Icon = iconMap[data.icon as string] || Database;
+  const colorClass = colorMap[data.color as string] || colorMap.blue;
+
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+    // Note: In a full implementation, you'd update the node data here
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        'px-4 py-3 rounded-lg border-2 min-w-[140px] transition-all',
+        colorClass,
+        selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+      )}
+      onDoubleClick={handleDoubleClick}
+    >
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="!bg-primary !border-primary-foreground !w-3 !h-3"
+      />
+
+      <div className="flex items-center gap-2">
+        <Icon className="h-5 w-5 shrink-0" />
+        {isEditing ? (
+          <Input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            className="h-6 text-sm p-1"
+            autoFocus
+          />
+        ) : (
+          <span className="font-medium text-sm truncate">{label}</span>
+        )}
+      </div>
+
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className="!bg-primary !border-primary-foreground !w-3 !h-3"
+      />
+    </div>
+  );
+}
+
+export const ArchitectNode = memo(ArchitectNodeComponent);
