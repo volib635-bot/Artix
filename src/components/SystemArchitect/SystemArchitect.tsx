@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useRef, useEffect, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -11,6 +11,11 @@ import {
   Panel,
   MarkerType,
   type Node,
+  type Edge,
+  EdgeLabelRenderer,
+  BaseEdge,
+  getStraightPath,
+  getBezierPath,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { ArrowLeft, Save, Plus, Database, Server, Monitor, Cloud, Cpu, HardDrive } from 'lucide-react';
@@ -24,6 +29,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type ArchitectNodeData = Record<string, unknown> & {
   label: string;
@@ -72,10 +86,19 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     design.board_state.edges.map((e) => ({
       ...e,
+      label: e.label || '',
       markerEnd: { type: MarkerType.ArrowClosed },
       style: { stroke: 'hsl(var(--primary))' },
+      labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
+      labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.9 },
+      labelBgPadding: [8, 4] as [number, number],
+      labelBgBorderRadius: 4,
     }))
   );
+
+  // Edge label editing state
+  const [editingEdge, setEditingEdge] = useState<Edge | null>(null);
+  const [edgeLabelInput, setEdgeLabelInput] = useState('');
 
   const nodeIdCounter = useRef(nodes.length);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -117,8 +140,13 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
         addEdge(
           {
             ...connection,
+            label: '',
             markerEnd: { type: MarkerType.ArrowClosed },
             style: { stroke: 'hsl(var(--primary))' },
+            labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
+            labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.9 },
+            labelBgPadding: [8, 4] as [number, number],
+            labelBgBorderRadius: 4,
           },
           eds
         )
@@ -126,6 +154,25 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
     },
     [setEdges]
   );
+
+  const onEdgeDoubleClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
+    setEditingEdge(edge);
+    setEdgeLabelInput((edge.label as string) || '');
+  }, []);
+
+  const handleEdgeLabelSave = useCallback(() => {
+    if (editingEdge) {
+      setEdges((eds) =>
+        eds.map((e) =>
+          e.id === editingEdge.id
+            ? { ...e, label: edgeLabelInput }
+            : e
+        )
+      );
+      setEditingEdge(null);
+      setEdgeLabelInput('');
+    }
+  }, [editingEdge, edgeLabelInput, setEdges]);
 
   const addNode = (template: (typeof nodeTemplates)[0]) => {
     nodeIdCounter.current += 1;
@@ -212,6 +259,7 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onEdgeDoubleClick={onEdgeDoubleClick}
           nodeTypes={nodeTypes}
           fitView
           className="bg-background"
@@ -228,10 +276,42 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
             maskColor="hsl(var(--background) / 0.8)"
           />
           <Panel position="bottom-center" className="bg-card/80 backdrop-blur border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground">
-            Drag to connect nodes • Double-click to edit labels
+            Drag to connect nodes • Double-click nodes or edges to edit labels
           </Panel>
         </ReactFlow>
       </div>
+
+      {/* Edge Label Edit Dialog */}
+      <Dialog open={!!editingEdge} onOpenChange={(open) => !open && setEditingEdge(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Connection Label</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edge-label">Label</Label>
+              <Input
+                id="edge-label"
+                value={edgeLabelInput}
+                onChange={(e) => setEdgeLabelInput(e.target.value)}
+                placeholder="e.g., REST API, WebSocket, gRPC..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleEdgeLabelSave();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingEdge(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEdgeLabelSave}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
