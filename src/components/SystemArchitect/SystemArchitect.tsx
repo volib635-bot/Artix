@@ -262,6 +262,7 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
           onEdgeDoubleClick={onEdgeDoubleClick}
           nodeTypes={nodeTypes}
           fitView
+          deleteKeyCode={['Backspace', 'Delete']}
           className="bg-background"
           defaultEdgeOptions={{
             markerEnd: { type: MarkerType.ArrowClosed },
@@ -276,7 +277,7 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
             maskColor="hsl(var(--background) / 0.8)"
           />
           <Panel position="bottom-center" className="bg-card/80 backdrop-blur border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground">
-            Drag to connect nodes • Double-click nodes or edges to edit labels
+            Drag to connect • Double-click to edit labels • Select + Delete/Backspace to remove
           </Panel>
         </ReactFlow>
       </div>
