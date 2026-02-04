@@ -20,12 +20,26 @@ const Dashboard = () => {
     isCreating 
   } = useProjects();
 
-  // Redirect if not logged in
+  // Redirect if not logged in - use replace to avoid back-button loops
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate('/auth', { replace: true });
     }
   }, [user, authLoading, navigate]);
+
+  // Don't render anything until auth is resolved to prevent flicker
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // If no user after loading, return null (redirect will happen)
+  if (!user) {
+    return null;
+  }
 
   const handleCreateProject = async (name: string) => {
     try {
@@ -65,7 +79,7 @@ const Dashboard = () => {
     navigate('/');
   };
 
-  if (authLoading || projectsLoading) {
+  if (projectsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

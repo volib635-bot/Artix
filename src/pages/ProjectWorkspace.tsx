@@ -50,16 +50,30 @@ const ProjectWorkspace = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate('/auth', { replace: true });
     }
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (!projectsLoading && !project && user) {
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
       toast.error('Project not found');
     }
   }, [project, projectsLoading, user, navigate]);
+
+  // Don't render until auth is resolved
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // If no user after auth loading, return null (redirect will happen)
+  if (!user) {
+    return null;
+  }
 
   const handleCreateDocument = async () => {
     if (!id) return;
@@ -124,7 +138,7 @@ const ProjectWorkspace = () => {
 
   const currentDesign = designs.find((d) => d.id === selectedDesign);
 
-  if (authLoading || projectsLoading) {
+  if (projectsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
