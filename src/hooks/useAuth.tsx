@@ -21,27 +21,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    // Set up auth state listener FIRST
+    // Listener for ONGOING auth changes (does NOT control loading state)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (isMounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
+        if (!isMounted) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+        // Don't set loading here - only initial load controls loading state
       }
     );
 
-    // THEN check for existing session (only set loading to false if no session)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (isMounted) {
+    // INITIAL load (controls loading state)
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
         setSession(session);
         setUser(session?.user ?? null);
-        // Only set loading false here if we got a definitive answer
-        // onAuthStateChange will also fire, but this ensures we don't flicker
-        setLoading(false);
+      } finally {
+        // Only set loading to false after initial check is complete
+        if (isMounted) setLoading(false);
       }
-    });
+    };
+
+    initializeAuth();
 
     return () => {
       isMounted = false;
