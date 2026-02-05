@@ -65,10 +65,11 @@ const nodeTemplates = [
 interface SystemArchitectProps {
   design: SystemDesign;
   onSave: (boardState: BoardState) => Promise<unknown>;
+  onUpdateName?: (name: string) => Promise<unknown>;
   onBack: () => void;
 }
 
-export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps) {
+export function SystemArchitect({ design, onSave, onUpdateName, onBack }: SystemArchitectProps) {
   const initialNodes: ArchitectFlowNode[] = design.board_state.nodes.map((n) => ({
     id: n.id,
     type: 'architect',
@@ -99,6 +100,10 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
   // Edge label editing state
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null);
   const [edgeLabelInput, setEdgeLabelInput] = useState('');
+  
+  // Design name editing
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [designName, setDesignName] = useState(design.name);
 
   const nodeIdCounter = useRef(nodes.length);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -212,6 +217,15 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
     toast.success('Design saved');
   };
 
+  const handleNameSave = async () => {
+    const trimmedName = designName.trim();
+    if (trimmedName && trimmedName !== design.name && onUpdateName) {
+      await onUpdateName(trimmedName);
+      toast.success('Design renamed');
+    }
+    setIsEditingName(false);
+  };
+
   return (
     <div className="h-screen w-full bg-background flex flex-col">
       {/* Header */}
@@ -220,7 +234,30 @@ export function SystemArchitect({ design, onSave, onBack }: SystemArchitectProps
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-semibold text-foreground truncate">{design.name}</h1>
+          {isEditingName ? (
+            <Input
+              value={designName}
+              onChange={(e) => setDesignName(e.target.value)}
+              onBlur={handleNameSave}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleNameSave();
+                if (e.key === 'Escape') {
+                  setDesignName(design.name);
+                  setIsEditingName(false);
+                }
+              }}
+              className="h-8 max-w-xs"
+              autoFocus
+            />
+          ) : (
+            <h1
+              className="font-semibold text-foreground truncate cursor-pointer hover:text-primary transition-colors"
+              onClick={() => setIsEditingName(true)}
+              title="Click to rename"
+            >
+              {design.name}
+            </h1>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <DropdownMenu>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, FileText, GitBranch, Plus, Loader2, MoreVertical, Trash2 } from 'lucide-react';
+import { ArrowLeft, FileText, GitBranch, Plus, Loader2, MoreVertical, Trash2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,7 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useSystemDesigns } from '@/hooks/useSystemDesigns';
 import { Editor, Document } from '@/components/Editor/Editor';
 import { SystemArchitect } from '@/components/SystemArchitect/SystemArchitect';
+import { RenameDialog } from '@/components/RenameDialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -45,6 +46,8 @@ const ProjectWorkspace = () => {
   const [activeTab, setActiveTab] = useState<'documents' | 'architect'>('documents');
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [selectedDesign, setSelectedDesign] = useState<string | null>(null);
+  const [renameDoc, setRenameDoc] = useState<{ id: string; title: string } | null>(null);
+  const [renameDesign, setRenameDesign] = useState<{ id: string; name: string } | null>(null);
 
   const project = projects.find((p) => p.id === id);
 
@@ -138,6 +141,17 @@ const ProjectWorkspace = () => {
 
   const currentDesign = designs.find((d) => d.id === selectedDesign);
 
+  const handleRenameDocument = async (newTitle: string) => {
+    if (!renameDoc) return;
+    await updateDocument({ id: renameDoc.id, title: newTitle });
+    toast.success('Document renamed');
+  };
+
+  const handleRenameDesign = async (newName: string) => {
+    if (!renameDesign) return;
+    await updateDesign({ id: renameDesign.id, name: newName });
+    toast.success('Design renamed');
+  };
   if (projectsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -163,6 +177,7 @@ const ProjectWorkspace = () => {
       <SystemArchitect
         design={currentDesign}
         onSave={(boardState) => updateDesign({ id: currentDesign.id, board_state: boardState })}
+        onUpdateName={(name) => updateDesign({ id: currentDesign.id, name })}
         onBack={() => setSelectedDesign(null)}
       />
     );
@@ -267,6 +282,15 @@ const ProjectWorkspace = () => {
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
+                            setRenameDoc({ id: doc.id, title: doc.title });
+                          }}
+                        >
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
                             handleDeleteDocument(doc.id);
                           }}
                           className="text-destructive focus:text-destructive"
@@ -340,6 +364,15 @@ const ProjectWorkspace = () => {
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
+                            setRenameDesign({ id: design.id, name: design.name });
+                          }}
+                        >
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
                             handleDeleteDesign(design.id);
                           }}
                           className="text-destructive focus:text-destructive"
@@ -355,6 +388,22 @@ const ProjectWorkspace = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Rename Dialogs */}
+        <RenameDialog
+          open={!!renameDoc}
+          onOpenChange={(open) => !open && setRenameDoc(null)}
+          currentName={renameDoc?.title || ''}
+          onSave={handleRenameDocument}
+          title="Rename Document"
+        />
+        <RenameDialog
+          open={!!renameDesign}
+          onOpenChange={(open) => !open && setRenameDesign(null)}
+          currentName={renameDesign?.name || ''}
+          onSave={handleRenameDesign}
+          title="Rename System Design"
+        />
       </main>
     </div>
   );
