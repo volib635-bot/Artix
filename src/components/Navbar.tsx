@@ -44,6 +44,7 @@ export function Navbar({ isLoggedIn = false, onLogout }: NavbarProps) {
                 <Button
                   variant="ghost"
                   size="icon"
+                  onClick={() => navigate('/settings')}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <User className="h-4 w-4" />
