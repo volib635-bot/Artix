@@ -12,16 +12,21 @@ import {
   MarkerType,
   type Node,
   type Edge,
-  EdgeLabelRenderer,
-  BaseEdge,
-  getStraightPath,
-  getBezierPath,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ArrowLeft, Save, Plus, Database, Server, Monitor, Cloud, Cpu, HardDrive } from 'lucide-react';
+import {
+  ArrowLeft, Save, Plus, Pencil, Network, FlaskConical,
+  Database, Server, Monitor, Cloud, Cpu, HardDrive,
+  LayoutList, ArrowUpDown, Repeat, Split,
+  GitBranch, Circle, CheckCircle, ListOrdered, Layers,
+  Link, Hash, Triangle, Variable, MousePointer,
+  HelpCircle, Terminal,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SystemDesign, BoardState } from '@/hooks/useSystemDesigns';
 import { ArchitectNode } from './ArchitectNode';
+import { DrawingCanvas, Stroke } from './DrawingCanvas';
+import { systemDesignTemplates, algorithmTemplates, NodeTemplate } from './AlgorithmNodeTemplates';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -53,14 +58,13 @@ const nodeTypes = {
   architect: ArchitectNode,
 };
 
-const nodeTemplates = [
-  { type: 'database', label: 'Database', icon: 'Database', color: 'blue' },
-  { type: 'server', label: 'Server', icon: 'Server', color: 'green' },
-  { type: 'frontend', label: 'Frontend', icon: 'Monitor', color: 'purple' },
-  { type: 'cloud', label: 'Cloud Service', icon: 'Cloud', color: 'cyan' },
-  { type: 'api', label: 'API', icon: 'Cpu', color: 'orange' },
-  { type: 'storage', label: 'Storage', icon: 'HardDrive', color: 'pink' },
-];
+const allIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  Database, Server, Monitor, Cloud, Cpu, HardDrive,
+  LayoutList, ArrowUpDown, Repeat, Split,
+  GitBranch, Circle, CheckCircle, ListOrdered, Layers,
+  Link, Hash, Triangle, Variable, MousePointer,
+  HelpCircle, Terminal,
+};
 
 interface SystemArchitectProps {
   design: SystemDesign;
