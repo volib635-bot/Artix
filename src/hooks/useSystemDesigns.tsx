@@ -15,6 +15,11 @@ export interface BoardState {
     target: string;
     label?: string;
   }>;
+  strokes?: Array<{
+    points: { x: number; y: number }[];
+    color: string;
+    width: number;
+  }>;
 }
 
 export interface SystemDesign {

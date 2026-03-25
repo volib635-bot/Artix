@@ -1,6 +1,12 @@
 import { memo, useState } from 'react';
 import { Handle, Position, NodeProps } from '@xyflow/react';
-import { Database, Server, Monitor, Cloud, Cpu, HardDrive } from 'lucide-react';
+import {
+  Database, Server, Monitor, Cloud, Cpu, HardDrive,
+  LayoutList, ArrowUpDown, Repeat, Split,
+  GitBranch, Circle, CheckCircle, ListOrdered, Layers,
+  Link, Hash, Triangle, Variable, MousePointer,
+  HelpCircle, Terminal,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
@@ -11,6 +17,22 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Cloud,
   Cpu,
   HardDrive,
+  LayoutList,
+  ArrowUpDown,
+  Repeat,
+  Split,
+  GitBranch,
+  Circle,
+  CheckCircle,
+  ListOrdered,
+  Layers,
+  Link,
+  Hash,
+  Triangle,
+  Variable,
+  MousePointer,
+  HelpCircle,
+  Terminal,
 };
 
 const colorMap: Record<string, string> = {

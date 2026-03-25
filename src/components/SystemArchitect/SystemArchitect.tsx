@@ -12,16 +12,21 @@ import {
   MarkerType,
   type Node,
   type Edge,
-  EdgeLabelRenderer,
-  BaseEdge,
-  getStraightPath,
-  getBezierPath,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ArrowLeft, Save, Plus, Database, Server, Monitor, Cloud, Cpu, HardDrive } from 'lucide-react';
+import {
+  ArrowLeft, Save, Plus, Pencil, Network, FlaskConical,
+  Database, Server, Monitor, Cloud, Cpu, HardDrive,
+  LayoutList, ArrowUpDown, Repeat, Split,
+  GitBranch, Circle, CheckCircle, ListOrdered, Layers,
+  Link, Hash, Triangle, Variable, MousePointer,
+  HelpCircle, Terminal,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SystemDesign, BoardState } from '@/hooks/useSystemDesigns';
 import { ArchitectNode } from './ArchitectNode';
+import { DrawingCanvas, Stroke } from './DrawingCanvas';
+import { systemDesignTemplates, algorithmTemplates, NodeTemplate } from './AlgorithmNodeTemplates';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -53,14 +58,13 @@ const nodeTypes = {
   architect: ArchitectNode,
 };
 
-const nodeTemplates = [
-  { type: 'database', label: 'Database', icon: 'Database', color: 'blue' },
-  { type: 'server', label: 'Server', icon: 'Server', color: 'green' },
-  { type: 'frontend', label: 'Frontend', icon: 'Monitor', color: 'purple' },
-  { type: 'cloud', label: 'Cloud Service', icon: 'Cloud', color: 'cyan' },
-  { type: 'api', label: 'API', icon: 'Cpu', color: 'orange' },
-  { type: 'storage', label: 'Storage', icon: 'HardDrive', color: 'pink' },
-];
+const allIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  Database, Server, Monitor, Cloud, Cpu, HardDrive,
+  LayoutList, ArrowUpDown, Repeat, Split,
+  GitBranch, Circle, CheckCircle, ListOrdered, Layers,
+  Link, Hash, Triangle, Variable, MousePointer,
+  HelpCircle, Terminal,
+};
 
 interface SystemArchitectProps {
   design: SystemDesign;
@@ -100,10 +104,21 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
   // Edge label editing state
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null);
   const [edgeLabelInput, setEdgeLabelInput] = useState('');
-  
-  // Design name editing
   const [isEditingName, setIsEditingName] = useState(false);
   const [designName, setDesignName] = useState(design.name);
+  const [mode, setMode] = useState<'system' | 'algorithm'>('system');
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [strokes, setStrokes] = useState<Stroke[]>(
+    (design.board_state as any).strokes || []
+  );
+
+  const groupedTemplates = mode === 'algorithm'
+    ? algorithmTemplates.reduce<Record<string, NodeTemplate[]>>((acc, t) => {
+        const cat = t.category || 'Other';
+        (acc[cat] = acc[cat] || []).push(t);
+        return acc;
+      }, {})
+    : null;
 
   const nodeIdCounter = useRef(nodes.length);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -130,14 +145,15 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           target: e.target,
           label: e.label as string | undefined,
         })),
+        strokes,
       };
       await onSave(boardState);
     }, 1000);
-  }, [nodes, edges, onSave]);
+  }, [nodes, edges, strokes, onSave]);
 
   useEffect(() => {
     triggerAutoSave();
-  }, [nodes, edges, triggerAutoSave]);
+  }, [nodes, edges, strokes, triggerAutoSave]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -179,7 +195,7 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
     }
   }, [editingEdge, edgeLabelInput, setEdges]);
 
-  const addNode = (template: (typeof nodeTemplates)[0]) => {
+  const addNode = (template: NodeTemplate) => {
     nodeIdCounter.current += 1;
     const newNode: ArchitectFlowNode = {
       id: `node-${nodeIdCounter.current}`,
@@ -212,6 +228,7 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
         target: e.target,
         label: e.label as string | undefined,
       })),
+        strokes,
     };
     await onSave(boardState);
     toast.success('Design saved');
@@ -260,6 +277,39 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           )}
         </div>
         <div className="flex items-center gap-2">
+          {/* Mode toggle */}
+          <div className="flex items-center border border-border rounded-lg overflow-hidden">
+            <Button
+              variant={mode === 'system' ? 'default' : 'ghost'}
+              size="sm"
+              className="rounded-none gap-1.5 h-9"
+              onClick={() => setMode('system')}
+            >
+              <Network className="h-4 w-4" />
+              System
+            </Button>
+            <Button
+              variant={mode === 'algorithm' ? 'default' : 'ghost'}
+              size="sm"
+              className="rounded-none gap-1.5 h-9"
+              onClick={() => setMode('algorithm')}
+            >
+              <FlaskConical className="h-4 w-4" />
+              Algorithm
+            </Button>
+          </div>
+
+          {/* Draw toggle */}
+          <Button
+            variant={isDrawing ? 'default' : 'outline'}
+            size="sm"
+            className="gap-1.5 h-9"
+            onClick={() => setIsDrawing(!isDrawing)}
+          >
+            <Pencil className="h-4 w-4" />
+            Draw
+          </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -267,18 +317,35 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
                 Add Node
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {nodeTemplates.map((template) => (
-                <DropdownMenuItem key={template.type} onClick={() => addNode(template)}>
-                  {template.icon === 'Database' && <Database className="h-4 w-4 mr-2" />}
-                  {template.icon === 'Server' && <Server className="h-4 w-4 mr-2" />}
-                  {template.icon === 'Monitor' && <Monitor className="h-4 w-4 mr-2" />}
-                  {template.icon === 'Cloud' && <Cloud className="h-4 w-4 mr-2" />}
-                  {template.icon === 'Cpu' && <Cpu className="h-4 w-4 mr-2" />}
-                  {template.icon === 'HardDrive' && <HardDrive className="h-4 w-4 mr-2" />}
-                  {template.label}
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+              {mode === 'system' ? (
+                systemDesignTemplates.map((template) => {
+                  const Icon = allIcons[template.icon];
+                  return (
+                    <DropdownMenuItem key={template.type} onClick={() => addNode(template)}>
+                      {Icon && <Icon className="h-4 w-4 mr-2" />}
+                      {template.label}
+                    </DropdownMenuItem>
+                  );
+                })
+              ) : (
+                Object.entries(groupedTemplates!).map(([category, templates]) => (
+                  <div key={category}>
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {category}
+                    </div>
+                    {templates.map((template) => {
+                      const Icon = allIcons[template.icon];
+                      return (
+                        <DropdownMenuItem key={template.type} onClick={() => addNode(template)}>
+                          {Icon && <Icon className="h-4 w-4 mr-2" />}
+                          {template.label}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </div>
+                ))
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           <Button onClick={handleManualSave} className="gap-2">
@@ -289,7 +356,12 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
       </header>
 
       {/* Canvas */}
-      <div className="flex-1">
+      <div className="flex-1 relative">
+        <DrawingCanvas
+          isActive={isDrawing}
+          strokes={strokes}
+          onStrokesChange={setStrokes}
+        />
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -313,8 +385,12 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
             nodeColor="hsl(var(--primary))"
             maskColor="hsl(var(--background) / 0.8)"
           />
-          <Panel position="bottom-center" className="bg-card/80 backdrop-blur border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground">
-            Drag to connect • Double-click to edit labels • Select + Delete/Backspace to remove
+          <Panel position="bottom-center" className="bg-card/80 backdrop-blur border border-border rounded-lg px-4 py-2 text-sm text-muted-foreground z-0">
+            {isDrawing
+              ? 'Drawing mode active • Click Draw again to return to editing'
+              : mode === 'algorithm'
+                ? 'Algorithm mode • Add nodes to visualize data structures & algorithms'
+                : 'Drag to connect • Double-click to edit labels • Delete/Backspace to remove'}
           </Panel>
         </ReactFlow>
       </div>
