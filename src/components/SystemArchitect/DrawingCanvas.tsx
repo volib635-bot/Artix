@@ -111,8 +111,8 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
       <canvas
         ref={canvasRef}
         className={cn(
-          'absolute inset-0 z-10',
-          isActive ? 'cursor-crosshair' : 'pointer-events-none'
+          'absolute inset-0 z-50',
+          isActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
         )}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
