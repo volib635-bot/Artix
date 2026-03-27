@@ -357,11 +357,6 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
 
       {/* Canvas */}
       <div className="flex-1 relative">
-        <DrawingCanvas
-          isActive={isDrawing}
-          strokes={strokes}
-          onStrokesChange={setStrokes}
-        />
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -371,7 +366,15 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           onEdgeDoubleClick={onEdgeDoubleClick}
           nodeTypes={nodeTypes}
           fitView
-          deleteKeyCode={['Backspace', 'Delete']}
+          deleteKeyCode={isDrawing ? [] : ['Backspace', 'Delete']}
+          nodesDraggable={!isDrawing}
+          elementsSelectable={!isDrawing}
+          panOnDrag={!isDrawing}
+          panOnScroll={!isDrawing}
+          zoomOnScroll={!isDrawing}
+          zoomOnPinch={!isDrawing}
+          zoomOnDoubleClick={!isDrawing}
+          selectionOnDrag={!isDrawing}
           className="bg-background"
           defaultEdgeOptions={{
             markerEnd: { type: MarkerType.ArrowClosed },
@@ -393,6 +396,11 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
                 : 'Drag to connect • Double-click to edit labels • Delete/Backspace to remove'}
           </Panel>
         </ReactFlow>
+        <DrawingCanvas
+          isActive={isDrawing}
+          strokes={strokes}
+          onStrokesChange={setStrokes}
+        />
       </div>
 
       {/* Edge Label Edit Dialog */}
