@@ -370,11 +370,11 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           nodesDraggable={!isDrawing}
           elementsSelectable={!isDrawing}
           panOnDrag={!isDrawing}
-          panOnScroll={!isDrawing}
+          panOnScroll={false}
           zoomOnScroll={!isDrawing}
           zoomOnPinch={!isDrawing}
           zoomOnDoubleClick={!isDrawing}
-          selectionOnDrag={!isDrawing}
+          selectionOnDrag={false}
           className="bg-background"
           defaultEdgeOptions={{
             markerEnd: { type: MarkerType.ArrowClosed },
