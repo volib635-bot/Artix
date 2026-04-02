@@ -8,6 +8,7 @@ import {
   useNodesState,
   useEdgesState,
   Connection,
+  ConnectionLineType,
   Panel,
   MarkerType,
   type Node,
@@ -91,9 +92,10 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     design.board_state.edges.map((e) => ({
       ...e,
+      type: 'smoothstep',
       label: e.label || '',
-      markerEnd: { type: MarkerType.ArrowClosed },
-      style: { stroke: 'hsl(var(--primary))' },
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#F59E0B', width: 20, height: 20 },
+      style: { stroke: '#F59E0B', strokeWidth: 2 },
       labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
       labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.9 },
       labelBgPadding: [8, 4] as [number, number],
@@ -172,9 +174,10 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
         addEdge(
           {
             ...connection,
+            type: 'smoothstep',
             label: '',
-            markerEnd: { type: MarkerType.ArrowClosed },
-            style: { stroke: 'hsl(var(--primary))' },
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#F59E0B', width: 20, height: 20 },
+            style: { stroke: '#F59E0B', strokeWidth: 2 },
             labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
             labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.9 },
             labelBgPadding: [8, 4] as [number, number],
@@ -387,11 +390,13 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           zoomOnDoubleClick={!isDrawing}
           selectionOnDrag={false}
           className="bg-background"
+          connectionLineType={ConnectionLineType.SmoothStep}
+          connectionLineStyle={{ stroke: '#F59E0B', strokeWidth: 2, strokeDasharray: '6 3' }}
           defaultEdgeOptions={{
-            markerEnd: { type: MarkerType.ArrowClosed },
-            style: { stroke: 'hsl(var(--primary))' },
-          }}
-        >
+            type: 'smoothstep',
+            markerEnd: { type: MarkerType.ArrowClosed, color: '#F59E0B', width: 20, height: 20 },
+            style: { stroke: '#F59E0B', strokeWidth: 2 },
+          }}>
           <Background color="hsl(var(--muted-foreground) / 0.2)" gap={20} />
           <Controls className="bg-card border border-border rounded-lg" />
           <MiniMap

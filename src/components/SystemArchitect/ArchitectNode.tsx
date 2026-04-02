@@ -11,28 +11,11 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Database,
-  Server,
-  Monitor,
-  Cloud,
-  Cpu,
-  HardDrive,
-  LayoutList,
-  ArrowUpDown,
-  Repeat,
-  Split,
-  GitBranch,
-  Circle,
-  CheckCircle,
-  ListOrdered,
-  Layers,
-  Link,
-  Hash,
-  Triangle,
-  Variable,
-  MousePointer,
-  HelpCircle,
-  Terminal,
+  Database, Server, Monitor, Cloud, Cpu, HardDrive,
+  LayoutList, ArrowUpDown, Repeat, Split,
+  GitBranch, Circle, CheckCircle, ListOrdered, Layers,
+  Link, Hash, Triangle, Variable, MousePointer,
+  HelpCircle, Terminal,
 };
 
 const colorMap: Record<string, string> = {
@@ -44,6 +27,14 @@ const colorMap: Record<string, string> = {
   pink: 'bg-pink-500/20 border-pink-500/50 text-pink-400',
 };
 
+const handleStyle = {
+  background: '#F59E0B',
+  border: '2px solid #D97706',
+  width: 12,
+  height: 12,
+  transition: 'all 0.2s ease',
+};
+
 function ArchitectNodeComponent({ data, selected }: NodeProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [label, setLabel] = useState(data.label as string);
@@ -51,34 +42,20 @@ function ArchitectNodeComponent({ data, selected }: NodeProps) {
   const Icon = iconMap[data.icon as string] || Database;
   const colorClass = colorMap[data.color as string] || colorMap.blue;
 
-  const handleDoubleClick = () => {
-    setIsEditing(true);
-  };
-
-  const handleBlur = () => {
-    setIsEditing(false);
-    // Note: In a full implementation, you'd update the node data here
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      setIsEditing(false);
-    }
-  };
-
   return (
     <div
       className={cn(
-        'px-4 py-3 rounded-lg border-2 min-w-[140px] transition-all',
+        'architect-node px-4 py-3 rounded-lg border-2 min-w-[140px] transition-all',
         colorClass,
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
       )}
-      onDoubleClick={handleDoubleClick}
+      onDoubleClick={() => setIsEditing(true)}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className="!bg-primary !border-primary-foreground !w-3 !h-3"
+        style={handleStyle}
+        className="!rounded-full hover:!shadow-[0_0_8px_#F59E0B] hover:!scale-125"
       />
 
       <div className="flex items-center gap-2">
@@ -87,8 +64,8 @@ function ArchitectNodeComponent({ data, selected }: NodeProps) {
           <Input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
+            onBlur={() => setIsEditing(false)}
+            onKeyDown={(e) => { if (e.key === 'Enter') setIsEditing(false); }}
             className="h-6 text-sm p-1"
             autoFocus
           />
@@ -100,7 +77,8 @@ function ArchitectNodeComponent({ data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!bg-primary !border-primary-foreground !w-3 !h-3"
+        style={handleStyle}
+        className="!rounded-full hover:!shadow-[0_0_8px_#F59E0B] hover:!scale-125"
       />
     </div>
   );
