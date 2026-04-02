@@ -92,9 +92,10 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     design.board_state.edges.map((e) => ({
       ...e,
+      type: 'smoothstep',
       label: e.label || '',
-      markerEnd: { type: MarkerType.ArrowClosed },
-      style: { stroke: 'hsl(var(--primary))' },
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#F59E0B', width: 20, height: 20 },
+      style: { stroke: '#F59E0B', strokeWidth: 2 },
       labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
       labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.9 },
       labelBgPadding: [8, 4] as [number, number],
