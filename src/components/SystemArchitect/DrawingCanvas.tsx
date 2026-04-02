@@ -24,20 +24,31 @@ const WIDTHS = [2, 4, 6, 10];
 
 export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const isDrawingRef = useRef(false);
   const currentStrokeRef = useRef<Stroke | null>(null);
   const [color, setColor] = useState('#3b82f6');
   const [width, setWidth] = useState(4);
   const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
 
+  const syncCanvasSize = useCallback(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+    const rect = container.getBoundingClientRect();
+    if (canvas.width !== rect.width || canvas.height !== rect.height) {
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+  }, []);
+
   const redraw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    syncCanvasSize();
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -47,9 +58,9 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
 
     for (const stroke of allStrokes) {
       if (stroke.points.length < 2) continue;
-      ctx.strokeStyle = stroke.color;
-      ctx.lineWidth = stroke.width;
       ctx.globalCompositeOperation = stroke.color === 'eraser' ? 'destination-out' : 'source-over';
+      ctx.strokeStyle = stroke.color === 'eraser' ? 'rgba(0,0,0,1)' : stroke.color;
+      ctx.lineWidth = stroke.width;
       ctx.beginPath();
       ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
       for (let i = 1; i < stroke.points.length; i++) {
@@ -58,11 +69,11 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
       ctx.stroke();
     }
     ctx.globalCompositeOperation = 'source-over';
-  }, [strokes]);
+  }, [strokes, syncCanvasSize]);
 
   useEffect(() => {
     redraw();
-  }, [redraw, strokes]);
+  }, [redraw]);
 
   useEffect(() => {
     const handleResize = () => redraw();
@@ -70,13 +81,16 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
     return () => window.removeEventListener('resize', handleResize);
   }, [redraw]);
 
-  const getPos = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const getPos = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isActive) return;
+    e.preventDefault();
+    e.stopPropagation();
+    (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
     isDrawingRef.current = true;
     const pos = getPos(e);
     currentStrokeRef.current = {
@@ -86,14 +100,18 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
     };
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isDrawingRef.current || !currentStrokeRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
     currentStrokeRef.current.points.push(getPos(e));
     redraw();
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!isDrawingRef.current || !currentStrokeRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
     isDrawingRef.current = false;
     if (currentStrokeRef.current.points.length > 1) {
       onStrokesChange([...strokes, currentStrokeRef.current]);
@@ -105,25 +123,32 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
     onStrokesChange([]);
   };
 
+  if (!isActive && strokes.length === 0) return null;
+
   return (
-    <>
-      {/* Drawing canvas overlay */}
+    <div
+      ref={containerRef}
+      className="absolute inset-0"
+      style={{ zIndex: isActive ? 10 : 1, pointerEvents: 'none' }}
+    >
       <canvas
         ref={canvasRef}
-        style={{ zIndex: isActive ? 1000 : 1 }}
         className={cn(
-          'absolute inset-0',
-          isActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
+          'absolute inset-0 w-full h-full',
+          isActive ? 'cursor-crosshair' : ''
         )}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        style={{ pointerEvents: isActive ? 'auto' : 'none' }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
       />
 
-      {/* Drawing toolbar */}
       {isActive && (
-        <div style={{ zIndex: 1001 }} className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-card/95 backdrop-blur border border-border rounded-xl px-4 py-2 shadow-lg">
+        <div
+          className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-card/95 backdrop-blur border border-border rounded-xl px-4 py-2 shadow-lg"
+          style={{ pointerEvents: 'auto', zIndex: 11 }}
+        >
           <Button
             variant={tool === 'pen' ? 'default' : 'ghost'}
             size="icon"
@@ -145,7 +170,6 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
 
           <div className="w-px h-6 bg-border mx-1" />
 
-          {/* Colors */}
           {COLORS.map((c) => (
             <button
               key={c}
@@ -160,7 +184,6 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
 
           <div className="w-px h-6 bg-border mx-1" />
 
-          {/* Widths */}
           {WIDTHS.map((w) => (
             <button
               key={w}
@@ -184,6 +207,6 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
           </Button>
         </div>
       )}
-    </>
+    </div>
   );
 }

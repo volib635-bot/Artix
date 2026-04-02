@@ -112,6 +112,17 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
     (design.board_state as any).strokes || []
   );
 
+  // Escape key exits draw mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isDrawing) {
+        setIsDrawing(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDrawing]);
+
   const groupedTemplates = mode === 'algorithm'
     ? algorithmTemplates.reduce<Record<string, NodeTemplate[]>>((acc, t) => {
         const cat = t.category || 'Other';
