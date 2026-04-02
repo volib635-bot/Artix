@@ -110,8 +110,9 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
       {/* Drawing canvas overlay */}
       <canvas
         ref={canvasRef}
+        style={{ zIndex: isActive ? 1000 : 1 }}
         className={cn(
-          'absolute inset-0 z-50',
+          'absolute inset-0',
           isActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
         )}
         onMouseDown={handleMouseDown}
