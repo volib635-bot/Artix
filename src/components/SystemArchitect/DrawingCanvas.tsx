@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { useReactFlow, useViewport } from '@xyflow/react';
 import { Pencil, Eraser, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -22,132 +23,127 @@ const COLORS = [
 
 const WIDTHS = [2, 4, 6, 10];
 
+/**
+ * SVG-based drawing layer that renders inside React Flow's viewport.
+ * Strokes are stored in world (flow) coordinates so they pan/zoom with nodes.
+ */
 export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { screenToFlowPosition } = useReactFlow();
+  const viewport = useViewport();
   const isDrawingRef = useRef(false);
-  const currentStrokeRef = useRef<Stroke | null>(null);
+  const currentPointsRef = useRef<{ x: number; y: number }[]>([]);
+  const [livePoints, setLivePoints] = useState<{ x: number; y: number }[] | null>(null);
   const [color, setColor] = useState('#3b82f6');
   const [width, setWidth] = useState(4);
   const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
 
-  const syncCanvasSize = useCallback(() => {
-    const canvas = canvasRef.current;
-    const container = containerRef.current;
-    if (!canvas || !container) return;
-    const rect = container.getBoundingClientRect();
-    if (canvas.width !== rect.width || canvas.height !== rect.height) {
-      canvas.width = rect.width;
-      canvas.height = rect.height;
-    }
-  }, []);
+  const toWorld = useCallback((e: React.PointerEvent) => {
+    return screenToFlowPosition({ x: e.clientX, y: e.clientY });
+  }, [screenToFlowPosition]);
 
-  const redraw = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    syncCanvasSize();
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    const allStrokes = [...strokes];
-    if (currentStrokeRef.current) allStrokes.push(currentStrokeRef.current);
-
-    for (const stroke of allStrokes) {
-      if (stroke.points.length < 2) continue;
-      ctx.globalCompositeOperation = stroke.color === 'eraser' ? 'destination-out' : 'source-over';
-      ctx.strokeStyle = stroke.color === 'eraser' ? 'rgba(0,0,0,1)' : stroke.color;
-      ctx.lineWidth = stroke.width;
-      ctx.beginPath();
-      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-      for (let i = 1; i < stroke.points.length; i++) {
-        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-      }
-      ctx.stroke();
-    }
-    ctx.globalCompositeOperation = 'source-over';
-  }, [strokes, syncCanvasSize]);
-
-  useEffect(() => {
-    redraw();
-  }, [redraw]);
-
-  useEffect(() => {
-    const handleResize = () => redraw();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [redraw]);
-
-  const getPos = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    const rect = canvasRef.current!.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-  };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const handlePointerDown = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
     if (!isActive) return;
     e.preventDefault();
     e.stopPropagation();
-    (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
+    (e.target as SVGSVGElement).setPointerCapture(e.pointerId);
     isDrawingRef.current = true;
-    const pos = getPos(e);
-    currentStrokeRef.current = {
-      points: [pos],
-      color: tool === 'eraser' ? 'eraser' : color,
-      width: tool === 'eraser' ? 20 : width,
-    };
-  };
+    const pos = toWorld(e);
+    currentPointsRef.current = [pos];
+    setLivePoints([pos]);
+  }, [isActive, toWorld]);
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawingRef.current || !currentStrokeRef.current) return;
+  const handlePointerMove = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    if (!isDrawingRef.current) return;
     e.preventDefault();
     e.stopPropagation();
-    currentStrokeRef.current.points.push(getPos(e));
-    redraw();
-  };
+    const pos = toWorld(e);
+    currentPointsRef.current.push(pos);
+    setLivePoints([...currentPointsRef.current]);
+  }, [toWorld]);
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!isDrawingRef.current || !currentStrokeRef.current) return;
+  const handlePointerUp = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
+    if (!isDrawingRef.current) return;
     e.preventDefault();
     e.stopPropagation();
     isDrawingRef.current = false;
-    if (currentStrokeRef.current.points.length > 1) {
-      onStrokesChange([...strokes, currentStrokeRef.current]);
+    const pts = currentPointsRef.current;
+    if (pts.length > 1) {
+      const newStroke: Stroke = {
+        points: pts,
+        color: tool === 'eraser' ? 'eraser' : color,
+        width: tool === 'eraser' ? 20 : width,
+      };
+      onStrokesChange([...strokes, newStroke]);
     }
-    currentStrokeRef.current = null;
+    currentPointsRef.current = [];
+    setLivePoints(null);
+  }, [tool, color, width, strokes, onStrokesChange]);
+
+  const handleClear = () => onStrokesChange([]);
+
+  const pointsToPath = (points: { x: number; y: number }[]) => {
+    if (points.length < 2) return '';
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      d += ` L ${points[i].x} ${points[i].y}`;
+    }
+    return d;
   };
 
-  const handleClear = () => {
-    onStrokesChange([]);
-  };
+  const allStrokes = livePoints
+    ? [...strokes, { points: livePoints, color: tool === 'eraser' ? 'eraser' : color, width: tool === 'eraser' ? 20 : width }]
+    : strokes;
 
   if (!isActive && strokes.length === 0) return null;
 
   return (
-    <div
-      ref={containerRef}
-      className="absolute inset-0"
-      style={{ zIndex: isActive ? 10 : 1, pointerEvents: 'none' }}
-    >
-      <canvas
-        ref={canvasRef}
-        className={cn(
-          'absolute inset-0 w-full h-full',
-          isActive ? 'cursor-crosshair' : ''
-        )}
-        style={{ pointerEvents: isActive ? 'auto' : 'none' }}
+    <>
+      {/* SVG layer in world-space, rendered inside ReactFlow viewport */}
+      <svg
+        className="react-flow__drawing-layer"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          overflow: 'visible',
+          pointerEvents: isActive ? 'all' : 'none',
+          cursor: isActive ? 'crosshair' : 'default',
+          zIndex: isActive ? 5 : 0,
+        }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
-      />
+      >
+        {/* Apply viewport transform so strokes are in world-space */}
+        <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}>
+          {allStrokes.map((stroke, i) => {
+            if (stroke.points.length < 2) return null;
+            const isEraser = stroke.color === 'eraser';
+            return (
+              <path
+                key={i}
+                d={pointsToPath(stroke.points)}
+                fill="none"
+                stroke={isEraser ? 'rgba(0,0,0,1)' : stroke.color}
+                strokeWidth={stroke.width}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke"
+                style={isEraser ? { mixBlendMode: 'destination-out' as any } : undefined}
+              />
+            );
+          })}
+        </g>
+      </svg>
 
+      {/* Toolbar - fixed to screen */}
       {isActive && (
         <div
           className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-card/95 backdrop-blur border border-border rounded-xl px-4 py-2 shadow-lg"
-          style={{ pointerEvents: 'auto', zIndex: 11 }}
+          style={{ pointerEvents: 'auto', zIndex: 20 }}
         >
           <Button
             variant={tool === 'pen' ? 'default' : 'ghost'}
@@ -207,6 +203,6 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 }
