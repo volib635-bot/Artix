@@ -410,13 +410,7 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
               : mode === 'algorithm'
                 ? 'Algorithm mode • Add nodes to visualize data structures & algorithms'
                 : 'Drag to connect • Double-click to edit labels • Delete/Backspace to remove'}
-          </Panel>
         </ReactFlow>
-        <DrawingCanvas
-          isActive={isDrawing}
-          strokes={strokes}
-          onStrokesChange={setStrokes}
-        />
       </div>
 
       {/* Edge Label Edit Dialog */}
