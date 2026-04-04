@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { FileEdit, LogIn, User, LogOut, Menu, X } from 'lucide-react';
+import { LogIn, User, LogOut, Menu, X } from 'lucide-react';
+import fenixLogo from '@/assets/fenix-logo.png';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
