@@ -3,16 +3,17 @@ import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { 
-  FileEdit, 
   Code2, 
   Network, 
   Workflow,
   Wifi,
   Sparkles,
+  FileEdit,
   FileText,
   FileCode,
   ChevronRight
 } from 'lucide-react';
+import fenixLogo from '@/assets/fenix-logo.png';
 
 const features = [
   {
