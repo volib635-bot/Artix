@@ -27,7 +27,7 @@ export function Navbar({ isLoggedIn = false, onLogout }: NavbarProps) {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center group-hover:shadow-lg group-hover:shadow-primary/30 transition-shadow">
               <FileEdit className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-foreground text-lg">TextForge</span>
+            <span className="font-semibold text-foreground text-lg">Fenix</span>
           </Link>
 
           {/* Desktop Navigation */}

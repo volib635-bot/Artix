@@ -5,9 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { 
   FileEdit, 
   Code2, 
-  Cloud, 
-  Zap, 
-  Shield, 
+  Network, 
+  Workflow,
+  Wifi,
   Sparkles,
   FileText,
   FileCode,
@@ -18,22 +18,22 @@ const features = [
   {
     icon: Code2,
     title: 'Document Forge',
-    description: 'Write in Markdown, XML, or plain text with syntax highlighting and intelligent formatting.',
+    description: 'Write in Markdown, XML, or plain text with Monaco editor, live preview, auto-save, and export to PDF/HTML.',
   },
   {
-    icon: Cloud,
+    icon: Network,
     title: 'System Architect',
-    description: 'Design your system architecture with a visual canvas. Connect databases, servers, and services.',
+    description: 'Design system architectures visually with drag-and-drop nodes, curved connections, and freehand drawing.',
   },
   {
-    icon: Zap,
-    title: 'Project Management',
-    description: 'Organize all your work in projects. Keep documents and designs together in one place.',
+    icon: Workflow,
+    title: 'Algorithm Visualizer',
+    description: 'Map out sorting, graph traversal, and data structure algorithms with specialized node templates.',
   },
   {
-    icon: Shield,
-    title: 'Secure & Private',
-    description: 'Your projects are encrypted and only accessible by you. Full ownership of your data.',
+    icon: Wifi,
+    title: 'Works Offline',
+    description: 'Install as a native app. Your work is cached and available even without internet.',
   },
 ];
 
@@ -73,7 +73,6 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
-        {/* Background Glow */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div 
             className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-20"
@@ -104,7 +103,7 @@ const Index = () => {
             </h1>
 
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Architect your systems, forge your documents, and manage your projects in one unified workspace.
+              Document, design, and visualize — all in one workspace. Write in Markdown, architect your systems, and map out algorithms with <span className="text-primary font-semibold">Fenix</span>.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -164,7 +163,6 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-primary/20 blur-3xl opacity-30 -z-10" />
             
             <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xl shadow-black/20">
-              {/* Mock Editor Header */}
               <div className="flex items-center gap-2 px-4 py-3 bg-secondary/50 border-b border-border">
                 <div className="flex gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -174,11 +172,10 @@ const Index = () => {
                 <span className="text-xs text-muted-foreground ml-2 font-mono">README.md</span>
               </div>
               
-              {/* Mock Editor Content */}
               <div className="p-6 font-mono text-sm leading-relaxed">
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">1</span>
-                  <span className="text-blue-400"># Welcome to TextForge</span>
+                  <span className="text-blue-400"># Welcome to Fenix</span>
                 </div>
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">2</span>
@@ -186,7 +183,7 @@ const Index = () => {
                 </div>
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">3</span>
-                  <span className="text-foreground">A modern, cloud-based text editor built for developers.</span>
+                  <span className="text-foreground">Your developer workspace for docs, architecture, and algorithms.</span>
                 </div>
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">4</span>
@@ -202,15 +199,15 @@ const Index = () => {
                 </div>
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">7</span>
-                  <span className="text-foreground">- <span className="text-primary">**Markdown**</span> with live preview</span>
+                  <span className="text-foreground">- <span className="text-primary">**Document Forge**</span> — Markdown, XML, live preview</span>
                 </div>
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">8</span>
-                  <span className="text-foreground">- <span className="text-primary">**XML**</span> syntax highlighting</span>
+                  <span className="text-foreground">- <span className="text-primary">**System Architect**</span> — visual node canvas</span>
                 </div>
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">9</span>
-                  <span className="text-foreground">- <span className="text-primary">**Auto-save**</span> to the cloud</span>
+                  <span className="text-foreground">- <span className="text-primary">**Algorithm Visualizer**</span> — sorting, graphs, trees</span>
                 </div>
                 <div className="flex items-center">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">10</span>
@@ -232,10 +229,10 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Power Tools for Developers
+              Everything You Need to Build
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to document, design, and manage your projects.
+              Document, design, visualize, and ship — all from one workspace.
             </p>
           </motion.div>
 
@@ -276,10 +273,10 @@ const Index = () => {
             
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Ready to Take Command?
+                Ready to Build?
               </h2>
               <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-                Join developers who use TextForge to architect systems, write documentation, and manage their projects.
+                Start building with Fenix — it's free. No setup, no credit card, just your ideas.
               </p>
               <Button 
                 size="lg" 
@@ -300,10 +297,10 @@ const Index = () => {
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
               <FileEdit className="h-3 w-3 text-primary-foreground" />
             </div>
-            <span className="font-semibold text-foreground">TextForge</span>
+            <span className="font-semibold text-foreground">Fenix</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} TextForge. Built with ❤️ for developers.
+            © {new Date().getFullYear()} Fenix. Built for developers.
           </p>
         </div>
       </footer>

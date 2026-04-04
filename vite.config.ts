@@ -54,9 +54,9 @@ export default defineConfig(() => ({
         ],
       },
       manifest: {
-        name: "TextForge - Developer's Command Center",
-        short_name: "TextForge",
-        description: "Architect systems, forge documents, manage projects",
+        name: "Fenix - Developer's Command Center",
+        short_name: "Fenix",
+        description: "Document, design, and visualize — all in one developer workspace",
         theme_color: "#1a1a2e",
         background_color: "#1a1a2e",
         display: "standalone",
