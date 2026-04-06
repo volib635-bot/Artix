@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useId } from 'react';
 import { useReactFlow, useViewport } from '@xyflow/react';
 import { Pencil, Eraser, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ const COLORS = [
 ];
 
 const WIDTHS = [2, 4, 6, 10];
+const MASK_EXTENT = 100000;
 
 /**
  * SVG-based drawing layer that renders inside React Flow's viewport.
@@ -30,6 +31,7 @@ const WIDTHS = [2, 4, 6, 10];
 export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCanvasProps) {
   const { screenToFlowPosition } = useReactFlow();
   const viewport = useViewport();
+  const maskIdPrefix = useId();
   const isDrawingRef = useRef(false);
   const currentPointsRef = useRef<{ x: number; y: number }[]>([]);
   const [livePoints, setLivePoints] = useState<{ x: number; y: number }[] | null>(null);
@@ -90,9 +92,63 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
     return d;
   };
 
+  const renderStrokePath = (stroke: Stroke, key: string, strokeColor = stroke.color) => (
+    <path
+      key={key}
+      d={pointsToPath(stroke.points)}
+      fill="none"
+      stroke={strokeColor}
+      strokeWidth={stroke.width}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      vectorEffect="non-scaling-stroke"
+    />
+  );
+
+  const buildStrokeLayers = (items: Stroke[]) => {
+    const defs: JSX.Element[] = [];
+    let content: JSX.Element | null = null;
+    let maskIndex = 0;
+
+    items.forEach((stroke, index) => {
+      if (stroke.points.length < 2) return;
+
+      if (stroke.color === 'eraser') {
+        const maskId = `${maskIdPrefix}-${maskIndex}`;
+
+        defs.push(
+          <mask key={maskId} id={maskId} maskUnits="userSpaceOnUse">
+            <rect
+              x={-MASK_EXTENT}
+              y={-MASK_EXTENT}
+              width={MASK_EXTENT * 2}
+              height={MASK_EXTENT * 2}
+              fill="white"
+            />
+            {renderStrokePath(stroke, `${maskId}-eraser`, 'black')}
+          </mask>
+        );
+
+        content = content ? <g mask={`url(#${maskId})`}>{content}</g> : null;
+        maskIndex += 1;
+        return;
+      }
+
+      content = (
+        <>
+          {content}
+          {renderStrokePath(stroke, `stroke-${index}`)}
+        </>
+      );
+    });
+
+    return { defs, content };
+  };
+
   const allStrokes = livePoints
     ? [...strokes, { points: livePoints, color: tool === 'eraser' ? 'eraser' : color, width: tool === 'eraser' ? 20 : width }]
     : strokes;
+  const { defs, content } = buildStrokeLayers(allStrokes);
 
   if (!isActive && strokes.length === 0) return null;
 
@@ -117,25 +173,10 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
+        <defs>{defs}</defs>
         {/* Apply viewport transform so strokes are in world-space */}
         <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`} style={{ isolation: 'isolate' } as React.CSSProperties}>
-          {allStrokes.map((stroke, i) => {
-            if (stroke.points.length < 2) return null;
-            const isEraser = stroke.color === 'eraser';
-            return (
-              <path
-                key={i}
-                d={pointsToPath(stroke.points)}
-                fill="none"
-                stroke={isEraser ? 'rgba(0,0,0,1)' : stroke.color}
-                strokeWidth={stroke.width}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                vectorEffect="non-scaling-stroke"
-                style={isEraser ? { mixBlendMode: 'destination-out' as any } : undefined}
-              />
-            );
-          })}
+          {content}
         </g>
       </svg>
 
