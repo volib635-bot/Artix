@@ -4,14 +4,21 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileEdit, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
+import fenixLogo from '@/assets/fenix-logo.png';
 
 const authSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  email: z.string()
+    .trim()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address')
+    .max(255, 'Email must be less than 255 characters'),
+  password: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(72, 'Password must be less than 72 characters'),
 });
 
 const Auth = () => {
@@ -20,25 +27,33 @@ const Auth = () => {
   const { signIn, signUp, user, loading } = useAuth();
   const [isSignUp, setIsSignUp] = useState(searchParams.get('mode') === 'signup');
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [showVerification, setShowVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
       navigate('/dashboard');
     }
   }, [user, loading, navigate]);
 
+  const validateField = (field: 'email' | 'password', value: string) => {
+    const partial = { ...formData, [field]: value };
+    const result = authSchema.shape[field].safeParse(value.trim());
+    if (!result.success) {
+      setErrors(prev => ({ ...prev, [field]: result.error.errors[0].message }));
+    } else {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    
-    // Validate form
-    const result = authSchema.safeParse(formData);
+
+    const trimmed = { email: formData.email.trim(), password: formData.password };
+    const result = authSchema.safeParse(trimmed);
     if (!result.success) {
       const fieldErrors: { email?: string; password?: string } = {};
       result.error.errors.forEach((err) => {
@@ -53,21 +68,31 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(formData.email, formData.password);
+        const { error } = await signUp(trimmed.email, trimmed.password);
         if (error) {
           if (error.message.includes('already registered')) {
             toast.error('This email is already registered. Please sign in instead.');
+            setErrors({ email: 'This email is already registered' });
+          } else if (error.message.includes('rate limit')) {
+            toast.error('Too many attempts. Please wait a moment and try again.');
           } else {
             toast.error(error.message);
           }
           return;
         }
-        toast.success('Account created! Check your email to confirm your account.');
+        setVerificationEmail(trimmed.email);
+        setShowVerification(true);
       } else {
-        const { error } = await signIn(formData.email, formData.password);
+        const { error } = await signIn(trimmed.email, trimmed.password);
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             toast.error('Invalid email or password. Please try again.');
+            setErrors({ password: 'Invalid email or password' });
+          } else if (error.message.includes('Email not confirmed')) {
+            toast.error('Please verify your email before signing in. Check your inbox.');
+            setErrors({ email: 'Email not verified. Check your inbox for the confirmation link.' });
+          } else if (error.message.includes('rate limit')) {
+            toast.error('Too many login attempts. Please wait a moment.');
           } else {
             toast.error(error.message);
           }
@@ -89,21 +114,59 @@ const Auth = () => {
     );
   }
 
+  if (showVerification) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md text-center"
+        >
+          <div className="w-16 h-16 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mx-auto mb-6">
+            <CheckCircle2 className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-3">Check your email</h1>
+          <p className="text-muted-foreground mb-2">
+            We've sent a verification link to:
+          </p>
+          <p className="text-foreground font-medium mb-6">{verificationEmail}</p>
+          <div className="bg-card border border-border rounded-lg p-4 mb-6 text-left space-y-2">
+            <p className="text-sm text-muted-foreground flex items-start gap-2">
+              <Mail className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+              Open the email and click the confirmation link to activate your account.
+            </p>
+            <p className="text-sm text-muted-foreground flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-amber-500" />
+              If you don't see it, check your spam or junk folder.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowVerification(false);
+              setIsSignUp(false);
+              setFormData({ email: verificationEmail, password: '' });
+            }}
+            className="w-full"
+          >
+            Back to Sign In
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left Panel - Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="w-full max-w-md"
         >
-          {/* Logo */}
           <div className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <FileEdit className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-xl text-foreground">TextForge</span>
+            <img src={fenixLogo} alt="Fenix" className="w-10 h-10 rounded-lg" />
+            <span className="font-bold text-xl text-foreground">Fenix</span>
           </div>
 
           <h1 className="text-2xl font-bold text-foreground mb-2">
@@ -111,11 +174,11 @@ const Auth = () => {
           </h1>
           <p className="text-muted-foreground mb-8">
             {isSignUp
-              ? 'Start writing with the modern cloud editor'
-              : 'Sign in to continue to your documents'}
+              ? 'Start building with the developer command center'
+              : 'Sign in to continue to your workspace'}
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -125,13 +188,20 @@ const Auth = () => {
                   type="email"
                   placeholder="you@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="pl-10"
-                  required
+                  onChange={(e) => {
+                    setFormData({ ...formData, email: e.target.value });
+                    if (errors.email) validateField('email', e.target.value);
+                  }}
+                  onBlur={(e) => validateField('email', e.target.value)}
+                  className={`pl-10 ${errors.email ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                  autoComplete="email"
                 />
               </div>
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.email}
+                </p>
               )}
             </div>
 
@@ -144,14 +214,23 @@ const Auth = () => {
                   type="password"
                   placeholder="••••••••"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="pl-10"
-                  required
-                  minLength={6}
+                  onChange={(e) => {
+                    setFormData({ ...formData, password: e.target.value });
+                    if (errors.password) validateField('password', e.target.value);
+                  }}
+                  onBlur={(e) => validateField('password', e.target.value)}
+                  className={`pl-10 ${errors.password ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 />
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.password}
+                </p>
+              )}
+              {isSignUp && (
+                <p className="text-xs text-muted-foreground">Must be at least 6 characters</p>
               )}
             </div>
 
@@ -172,7 +251,10 @@ const Auth = () => {
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
               <button
                 type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setErrors({});
+                }}
                 className="text-primary hover:underline font-medium"
               >
                 {isSignUp ? 'Sign in' : 'Sign up'}
@@ -182,13 +264,11 @@ const Auth = () => {
         </motion.div>
       </div>
 
-      {/* Right Panel - Decorative */}
       <div className="hidden lg:flex flex-1 items-center justify-center bg-card border-l border-border relative overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 opacity-30"
           style={{ background: 'var(--gradient-glow)' }}
         />
-        
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -196,26 +276,18 @@ const Auth = () => {
           className="relative z-10 text-center p-8"
         >
           <div className="w-24 h-24 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center mx-auto mb-6 animate-float">
-            <FileEdit className="h-12 w-12 text-primary" />
+            <img src={fenixLogo} alt="Fenix" className="h-14 w-14" />
           </div>
-          
           <h2 className="text-2xl font-bold text-foreground mb-3">
-            Write. Save. Collaborate.
+            Document. Design. Visualize.
           </h2>
           <p className="text-muted-foreground max-w-sm">
-            A powerful multi-format text editor with cloud persistence and automatic saving.
+            Your developer command center — write docs, architect systems, and map algorithms in one workspace.
           </p>
-
           <div className="flex justify-center gap-4 mt-8">
-            <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-mono">
-              .md
-            </div>
-            <div className="px-3 py-1.5 rounded-md bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-mono">
-              .xml
-            </div>
-            <div className="px-3 py-1.5 rounded-md bg-gray-500/10 border border-gray-500/20 text-gray-400 text-sm font-mono">
-              .txt
-            </div>
+            <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-mono">.md</div>
+            <div className="px-3 py-1.5 rounded-md bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-mono">.xml</div>
+            <div className="px-3 py-1.5 rounded-md bg-gray-500/10 border border-gray-500/20 text-gray-400 text-sm font-mono">.txt</div>
           </div>
         </motion.div>
       </div>
