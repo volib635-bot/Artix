@@ -118,7 +118,7 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
         onPointerLeave={handlePointerUp}
       >
         {/* Apply viewport transform so strokes are in world-space */}
-        <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`}>
+        <g transform={`translate(${viewport.x}, ${viewport.y}) scale(${viewport.zoom})`} style={{ isolation: 'isolate' } as React.CSSProperties}>
           {allStrokes.map((stroke, i) => {
             if (stroke.points.length < 2) return null;
             const isEraser = stroke.color === 'eraser';
