@@ -32,6 +32,7 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
   const { screenToFlowPosition } = useReactFlow();
   const viewport = useViewport();
   const maskIdPrefix = useId();
+  const svgRef = useRef<SVGSVGElement>(null);
   const isDrawingRef = useRef(false);
   const currentPointsRef = useRef<{ x: number; y: number }[]>([]);
   const [livePoints, setLivePoints] = useState<{ x: number; y: number }[] | null>(null);
