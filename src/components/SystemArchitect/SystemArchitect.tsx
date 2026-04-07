@@ -465,6 +465,57 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Custom Node Color Dialog */}
+      <Dialog open={customNodeDialog} onOpenChange={setCustomNodeDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Custom Node</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="custom-label">Node Name</Label>
+              <Input
+                id="custom-label"
+                value={customNodeLabel}
+                onChange={(e) => setCustomNodeLabel(e.target.value)}
+                placeholder="Enter node name..."
+                onKeyDown={(e) => { if (e.key === 'Enter') handleCustomNodeAdd(); }}
+                autoFocus
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Color</Label>
+              <div className="flex flex-wrap gap-2">
+                {(['blue', 'green', 'purple', 'cyan', 'orange', 'pink'] as const).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCustomNodeColor(c)}
+                    className={cn(
+                      'w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center text-xs font-medium capitalize',
+                      customNodeColor === c
+                        ? 'border-foreground scale-110 ring-2 ring-primary/50'
+                        : 'border-transparent hover:scale-105',
+                      c === 'blue' && 'bg-blue-500/20 text-blue-400',
+                      c === 'green' && 'bg-green-500/20 text-green-400',
+                      c === 'purple' && 'bg-purple-500/20 text-purple-400',
+                      c === 'cyan' && 'bg-cyan-500/20 text-cyan-400',
+                      c === 'orange' && 'bg-orange-500/20 text-orange-400',
+                      c === 'pink' && 'bg-pink-500/20 text-pink-400',
+                    )}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomNodeDialog(false)}>Cancel</Button>
+            <Button onClick={handleCustomNodeAdd}>Add Node</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
