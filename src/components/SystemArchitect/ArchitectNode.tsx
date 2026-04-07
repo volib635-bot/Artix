@@ -5,7 +5,7 @@ import {
   LayoutList, ArrowUpDown, Repeat, Split,
   GitBranch, Circle, CheckCircle, ListOrdered, Layers,
   Link, Hash, Triangle, Variable, MousePointer,
-  HelpCircle, Terminal,
+  HelpCircle, Terminal, Palette,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutList, ArrowUpDown, Repeat, Split,
   GitBranch, Circle, CheckCircle, ListOrdered, Layers,
   Link, Hash, Triangle, Variable, MousePointer,
-  HelpCircle, Terminal,
+  HelpCircle, Terminal, Palette,
 };
 
 const colorMap: Record<string, string> = {

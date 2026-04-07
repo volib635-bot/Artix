@@ -16,7 +16,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
-  ArrowLeft, Save, Plus, Pencil, Network, FlaskConical,
+  ArrowLeft, Save, Plus, Pencil, Network, FlaskConical, Palette,
   Database, Server, Monitor, Cloud, Cpu, HardDrive,
   LayoutList, ArrowUpDown, Repeat, Split,
   GitBranch, Circle, CheckCircle, ListOrdered, Layers,
@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { SystemDesign, BoardState } from '@/hooks/useSystemDesigns';
 import { ArchitectNode } from './ArchitectNode';
 import { DrawingCanvas, Stroke } from './DrawingCanvas';
+import { cn } from '@/lib/utils';
 import { systemDesignTemplates, algorithmTemplates, NodeTemplate } from './AlgorithmNodeTemplates';
 import { toast } from 'sonner';
 import {
@@ -64,7 +65,7 @@ const allIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutList, ArrowUpDown, Repeat, Split,
   GitBranch, Circle, CheckCircle, ListOrdered, Layers,
   Link, Hash, Triangle, Variable, MousePointer,
-  HelpCircle, Terminal,
+  HelpCircle, Terminal, Palette,
 };
 
 interface SystemArchitectProps {
@@ -113,6 +114,9 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
   const [strokes, setStrokes] = useState<Stroke[]>(
     (design.board_state as any).strokes || []
   );
+  const [customNodeDialog, setCustomNodeDialog] = useState(false);
+  const [customNodeColor, setCustomNodeColor] = useState('blue');
+  const [customNodeLabel, setCustomNodeLabel] = useState('Custom Node');
 
   // Escape key exits draw mode
   useEffect(() => {
@@ -209,20 +213,32 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
     }
   }, [editingEdge, edgeLabelInput, setEdges]);
 
-  const addNode = (template: NodeTemplate) => {
+  const addNode = (template: NodeTemplate, overrideColor?: string, overrideLabel?: string) => {
+    if (template.type === 'custom' && !overrideColor) {
+      setCustomNodeDialog(true);
+      return;
+    }
     nodeIdCounter.current += 1;
     const newNode: ArchitectFlowNode = {
       id: `node-${nodeIdCounter.current}`,
       type: 'architect',
       position: { x: 250 + Math.random() * 100, y: 150 + Math.random() * 100 },
       data: {
-        label: template.label,
+        label: overrideLabel || template.label,
         nodeType: template.type,
         icon: template.icon,
-        color: template.color,
+        color: overrideColor || template.color,
       },
     };
     setNodes((nds) => [...nds, newNode]);
+  };
+
+  const handleCustomNodeAdd = () => {
+    const template = systemDesignTemplates.find(t => t.type === 'custom')!;
+    addNode(template, customNodeColor, customNodeLabel.trim() || 'Custom Node');
+    setCustomNodeDialog(false);
+    setCustomNodeLabel('Custom Node');
+    setCustomNodeColor('blue');
   };
 
   const handleManualSave = async () => {
@@ -385,8 +401,8 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           elementsSelectable={!isDrawing}
           panOnDrag={!isDrawing}
           panOnScroll={false}
-          zoomOnScroll={!isDrawing}
-          zoomOnPinch={!isDrawing}
+          zoomOnScroll={true}
+          zoomOnPinch={true}
           zoomOnDoubleClick={!isDrawing}
           selectionOnDrag={false}
           className="bg-background"
@@ -447,6 +463,57 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
               Cancel
             </Button>
             <Button onClick={handleEdgeLabelSave}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Node Color Dialog */}
+      <Dialog open={customNodeDialog} onOpenChange={setCustomNodeDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Custom Node</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="custom-label">Node Name</Label>
+              <Input
+                id="custom-label"
+                value={customNodeLabel}
+                onChange={(e) => setCustomNodeLabel(e.target.value)}
+                placeholder="Enter node name..."
+                onKeyDown={(e) => { if (e.key === 'Enter') handleCustomNodeAdd(); }}
+                autoFocus
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Color</Label>
+              <div className="flex flex-wrap gap-2">
+                {(['blue', 'green', 'purple', 'cyan', 'orange', 'pink'] as const).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCustomNodeColor(c)}
+                    className={cn(
+                      'w-10 h-10 rounded-lg border-2 transition-all flex items-center justify-center text-xs font-medium capitalize',
+                      customNodeColor === c
+                        ? 'border-foreground scale-110 ring-2 ring-primary/50'
+                        : 'border-transparent hover:scale-105',
+                      c === 'blue' && 'bg-blue-500/20 text-blue-400',
+                      c === 'green' && 'bg-green-500/20 text-green-400',
+                      c === 'purple' && 'bg-purple-500/20 text-purple-400',
+                      c === 'cyan' && 'bg-cyan-500/20 text-cyan-400',
+                      c === 'orange' && 'bg-orange-500/20 text-orange-400',
+                      c === 'pink' && 'bg-pink-500/20 text-pink-400',
+                    )}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomNodeDialog(false)}>Cancel</Button>
+            <Button onClick={handleCustomNodeAdd}>Add Node</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

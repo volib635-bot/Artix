@@ -32,6 +32,7 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
   const { screenToFlowPosition } = useReactFlow();
   const viewport = useViewport();
   const maskIdPrefix = useId();
+  const svgRef = useRef<SVGSVGElement>(null);
   const isDrawingRef = useRef(false);
   const currentPointsRef = useRef<{ x: number; y: number }[]>([]);
   const [livePoints, setLivePoints] = useState<{ x: number; y: number }[] | null>(null);
@@ -156,6 +157,7 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
     <>
       {/* SVG layer in world-space, rendered inside ReactFlow viewport */}
       <svg
+        ref={svgRef}
         className="react-flow__drawing-layer"
         style={{
           position: 'absolute',
@@ -167,11 +169,19 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
           pointerEvents: isActive ? 'all' : 'none',
           cursor: isActive ? 'crosshair' : 'default',
           zIndex: isActive ? 5 : 0,
+          touchAction: 'none',
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
+        onWheelCapture={(e) => {
+          // Let wheel events pass through to ReactFlow for zooming
+          e.currentTarget.style.pointerEvents = 'none';
+          requestAnimationFrame(() => {
+            if (svgRef.current) svgRef.current.style.pointerEvents = isActive ? 'all' : 'none';
+          });
+        }}
       >
         <defs>{defs}</defs>
         {/* Apply viewport transform so strokes are in world-space */}

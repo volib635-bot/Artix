@@ -13,6 +13,7 @@ export const systemDesignTemplates: NodeTemplate[] = [
   { type: 'cloud', label: 'Cloud Service', icon: 'Cloud', color: 'cyan' },
   { type: 'api', label: 'API', icon: 'Cpu', color: 'orange' },
   { type: 'storage', label: 'Storage', icon: 'HardDrive', color: 'pink' },
+  { type: 'custom', label: 'Custom Node', icon: 'Palette', color: 'blue' },
 ];
 
 export const algorithmTemplates: NodeTemplate[] = [
