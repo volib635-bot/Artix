@@ -157,6 +157,7 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
     <>
       {/* SVG layer in world-space, rendered inside ReactFlow viewport */}
       <svg
+        ref={svgRef}
         className="react-flow__drawing-layer"
         style={{
           position: 'absolute',
