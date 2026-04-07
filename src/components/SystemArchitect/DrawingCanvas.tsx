@@ -1,7 +1,8 @@
-import { useRef, useState, useCallback, useId } from 'react';
+import { useRef, useState, useCallback, useId, useEffect } from 'react';
 import { useReactFlow, useViewport } from '@xyflow/react';
-import { Pencil, Eraser, Trash2 } from 'lucide-react';
+import { Pencil, Eraser, Trash2, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
 export interface Stroke {
@@ -22,6 +23,8 @@ const COLORS = [
 ];
 
 const WIDTHS = [2, 4, 6, 10];
+const ERASER_MIN = 10;
+const ERASER_MAX = 80;
 const MASK_EXTENT = 100000;
 
 /**
@@ -38,7 +41,26 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
   const [livePoints, setLivePoints] = useState<{ x: number; y: number }[] | null>(null);
   const [color, setColor] = useState('#3b82f6');
   const [width, setWidth] = useState(4);
+  const [eraserSize, setEraserSize] = useState(20);
   const [tool, setTool] = useState<'pen' | 'eraser'>('pen');
+
+  // Allow zoom (wheel) to pass through even while drawing
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || !isActive) return;
+
+    const handleWheel = () => {
+      svg.style.pointerEvents = 'none';
+      setTimeout(() => {
+        if (svgRef.current && isActive) {
+          svgRef.current.style.pointerEvents = 'all';
+        }
+      }, 60);
+    };
+
+    svg.addEventListener('wheel', handleWheel, { passive: true });
+    return () => svg.removeEventListener('wheel', handleWheel);
+  }, [isActive]);
 
   const toWorld = useCallback((e: React.PointerEvent) => {
     return screenToFlowPosition({ x: e.clientX, y: e.clientY });
@@ -74,13 +96,13 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
       const newStroke: Stroke = {
         points: pts,
         color: tool === 'eraser' ? 'eraser' : color,
-        width: tool === 'eraser' ? 20 : width,
+        width: tool === 'eraser' ? eraserSize : width,
       };
       onStrokesChange([...strokes, newStroke]);
     }
     currentPointsRef.current = [];
     setLivePoints(null);
-  }, [tool, color, width, strokes, onStrokesChange]);
+  }, [tool, color, width, eraserSize, strokes, onStrokesChange]);
 
   const handleClear = () => onStrokesChange([]);
 
@@ -147,7 +169,7 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
   };
 
   const allStrokes = livePoints
-    ? [...strokes, { points: livePoints, color: tool === 'eraser' ? 'eraser' : color, width: tool === 'eraser' ? 20 : width }]
+    ? [...strokes, { points: livePoints, color: tool === 'eraser' ? 'eraser' : color, width: tool === 'eraser' ? eraserSize : width }]
     : strokes;
   const { defs, content } = buildStrokeLayers(allStrokes);
 
@@ -175,13 +197,6 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
-        onWheelCapture={(e) => {
-          // Let wheel events pass through to ReactFlow for zooming
-          e.currentTarget.style.pointerEvents = 'none';
-          requestAnimationFrame(() => {
-            if (svgRef.current) svgRef.current.style.pointerEvents = isActive ? 'all' : 'none';
-          });
-        }}
       >
         <defs>{defs}</defs>
         {/* Apply viewport transform so strokes are in world-space */}
@@ -217,39 +232,57 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
 
           <div className="w-px h-6 bg-border mx-1" />
 
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              className={cn(
-                'w-6 h-6 rounded-full border-2 transition-transform',
-                color === c && tool === 'pen' ? 'scale-125 border-foreground' : 'border-transparent hover:scale-110'
-              )}
-              style={{ backgroundColor: c }}
-              onClick={() => { setColor(c); setTool('pen'); }}
-            />
-          ))}
+          {tool === 'pen' ? (
+            <>
+              {COLORS.map((c) => (
+                <button
+                  key={c}
+                  className={cn(
+                    'w-6 h-6 rounded-full border-2 transition-transform',
+                    color === c ? 'scale-125 border-foreground' : 'border-transparent hover:scale-110'
+                  )}
+                  style={{ backgroundColor: c }}
+                  onClick={() => setColor(c)}
+                />
+              ))}
 
-          <div className="w-px h-6 bg-border mx-1" />
+              <div className="w-px h-6 bg-border mx-1" />
 
-          {WIDTHS.map((w) => (
-            <button
-              key={w}
-              className={cn(
-                'flex items-center justify-center w-8 h-8 rounded-md transition-colors',
-                width === w && tool === 'pen' ? 'bg-primary/20' : 'hover:bg-muted'
-              )}
-              onClick={() => { setWidth(w); setTool('pen'); }}
-            >
-              <div
-                className="rounded-full bg-foreground"
-                style={{ width: w + 2, height: w + 2 }}
+              {WIDTHS.map((w) => (
+                <button
+                  key={w}
+                  className={cn(
+                    'flex items-center justify-center w-8 h-8 rounded-md transition-colors',
+                    width === w ? 'bg-primary/20' : 'hover:bg-muted'
+                  )}
+                  onClick={() => setWidth(w)}
+                >
+                  <div
+                    className="rounded-full bg-foreground"
+                    style={{ width: w + 2, height: w + 2 }}
+                  />
+                </button>
+              ))}
+            </>
+          ) : (
+            <div className="flex items-center gap-2 min-w-[180px]">
+              <Minus className="h-3 w-3 text-muted-foreground shrink-0" />
+              <Slider
+                value={[eraserSize]}
+                onValueChange={([v]) => setEraserSize(v)}
+                min={ERASER_MIN}
+                max={ERASER_MAX}
+                step={2}
+                className="w-28"
               />
-            </button>
-          ))}
+              <Plus className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span className="text-xs text-muted-foreground w-8 text-center">{eraserSize}px</span>
+            </div>
+          )}
 
           <div className="w-px h-6 bg-border mx-1" />
 
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleClear} title="Clear drawing">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={handleClear} title="Clear all drawings">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
