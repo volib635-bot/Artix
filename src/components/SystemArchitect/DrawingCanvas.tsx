@@ -172,6 +172,7 @@ export function DrawingCanvas({ isActive, strokes, onStrokesChange }: DrawingCan
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
+        onWheel={(e) => e.currentTarget.style.pointerEvents = 'none'}
       >
         <defs>{defs}</defs>
         {/* Apply viewport transform so strokes are in world-space */}

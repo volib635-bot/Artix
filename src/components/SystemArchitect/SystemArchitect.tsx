@@ -385,8 +385,8 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           elementsSelectable={!isDrawing}
           panOnDrag={!isDrawing}
           panOnScroll={false}
-          zoomOnScroll={!isDrawing}
-          zoomOnPinch={!isDrawing}
+          zoomOnScroll={true}
+          zoomOnPinch={true}
           zoomOnDoubleClick={!isDrawing}
           selectionOnDrag={false}
           className="bg-background"
