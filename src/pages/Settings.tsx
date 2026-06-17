@@ -27,6 +27,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { toast } from 'sonner';
+import { AISettingsCard } from '@/components/AI/AISettingsCard';
 
 const Settings = () => {
   const navigate = useNavigate();
