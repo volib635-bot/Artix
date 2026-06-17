@@ -55,6 +55,51 @@ export type Database = {
           },
         ]
       }
+      prd_generations: {
+        Row: {
+          created_at: string
+          id: string
+          output_markdown: string
+          project_id: string
+          source_document_id: string | null
+          template: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          output_markdown: string
+          project_id: string
+          source_document_id?: string | null
+          template: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          output_markdown?: string
+          project_id?: string
+          source_document_id?: string | null
+          template?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prd_generations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prd_generations_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
