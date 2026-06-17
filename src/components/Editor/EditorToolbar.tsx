@@ -169,6 +169,18 @@ export function EditorToolbar({
           <Save className="h-4 w-4 mr-1.5" />
           Save
         </Button>
+
+        {onGeneratePRD && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onGeneratePRD}
+            className="text-primary hover:text-primary"
+          >
+            <Sparkles className="h-4 w-4 mr-1.5" />
+            Generate PRD
+          </Button>
+        )}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
