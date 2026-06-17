@@ -27,10 +27,11 @@ interface EditorProps {
   projectId?: string;
 }
 
-export function Editor({ document, onSave, onBack }: EditorProps) {
+export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
   const [title, setTitle] = useState(document.title);
   const [content, setContent] = useState(document.content);
   const [format, setFormat] = useState<DocumentFormat>(document.format);
+  const [prdOpen, setPrdOpen] = useState(false);
 
   const handleSave = useCallback(
     async (contentToSave: string) => {
