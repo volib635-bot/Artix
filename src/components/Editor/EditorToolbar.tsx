@@ -30,7 +30,8 @@ import {
   FileDown,
   FileCode,
   FileType,
-  Sparkles
+  Sparkles,
+  Wand2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -45,6 +46,7 @@ interface EditorToolbarProps {
   onSave: () => void;
   onBack: () => void;
   onGeneratePRD?: () => void;
+  onGenerateVibe?: () => void;
 }
 
 const SaveIndicator = ({ status }: { status: SaveStatus }) => {
@@ -99,6 +101,7 @@ export function EditorToolbar({
   onSave,
   onBack,
   onGeneratePRD,
+  onGenerateVibe,
 }: EditorToolbarProps) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -179,6 +182,18 @@ export function EditorToolbar({
           >
             <Sparkles className="h-4 w-4 mr-1.5" />
             Generate PRD
+          </Button>
+        )}
+
+        {onGenerateVibe && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onGenerateVibe}
+            className="text-primary hover:text-primary"
+          >
+            <Wand2 className="h-4 w-4 mr-1.5" />
+            Vibe Prompt
           </Button>
         )}
         

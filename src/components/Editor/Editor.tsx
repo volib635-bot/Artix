@@ -11,6 +11,7 @@ import {
   ResizableHandle,
 } from '@/components/ui/resizable';
 import { PRDGeneratorDialog } from '@/components/AI/PRDGeneratorDialog';
+import { VibeCodingDialog } from '@/components/AI/VibeCodingDialog';
 
 export interface Document {
   id: string;
@@ -32,6 +33,7 @@ export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
   const [content, setContent] = useState(document.content);
   const [format, setFormat] = useState<DocumentFormat>(document.format);
   const [prdOpen, setPrdOpen] = useState(false);
+  const [vibeOpen, setVibeOpen] = useState(false);
 
   const handleSave = useCallback(
     async (contentToSave: string) => {
@@ -92,17 +94,28 @@ export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
         onSave={handleManualSave}
         onBack={onBack}
         onGeneratePRD={projectId ? () => setPrdOpen(true) : undefined}
+        onGenerateVibe={projectId ? () => setVibeOpen(true) : undefined}
       />
 
       {projectId && (
-        <PRDGeneratorDialog
-          open={prdOpen}
-          onOpenChange={setPrdOpen}
-          sourceTitle={title}
-          sourceContent={content}
-          sourceDocumentId={document.id}
-          projectId={projectId}
-        />
+        <>
+          <PRDGeneratorDialog
+            open={prdOpen}
+            onOpenChange={setPrdOpen}
+            sourceTitle={title}
+            sourceContent={content}
+            sourceDocumentId={document.id}
+            projectId={projectId}
+          />
+          <VibeCodingDialog
+            open={vibeOpen}
+            onOpenChange={setVibeOpen}
+            sourceTitle={title}
+            sourceContent={content}
+            sourceDocumentId={document.id}
+            projectId={projectId}
+          />
+        </>
       )}
 
       <div className="flex-1 overflow-hidden">

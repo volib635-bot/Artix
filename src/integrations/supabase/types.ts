@@ -186,6 +186,54 @@ export type Database = {
           },
         ]
       }
+      vibe_generations: {
+        Row: {
+          created_at: string
+          id: string
+          output_markdown: string
+          project_id: string
+          scope: string
+          source_document_id: string | null
+          target: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          output_markdown: string
+          project_id: string
+          scope: string
+          source_document_id?: string | null
+          target: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          output_markdown?: string
+          project_id?: string
+          scope?: string
+          source_document_id?: string | null
+          target?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vibe_generations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vibe_generations_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
