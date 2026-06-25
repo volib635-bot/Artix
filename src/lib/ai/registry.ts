@@ -2,10 +2,12 @@ import { openaiProvider } from './providers/openai';
 import { anthropicProvider } from './providers/anthropic';
 import { googleProvider } from './providers/google';
 import { groqProvider } from './providers/groq';
+import { lovableProvider } from './providers/lovable';
 import { loadSettings } from './storage';
 import { AIError, AIRequest, AIResponse, ProviderDef, ProviderId } from './types';
 
 export const PROVIDERS: Record<ProviderId, ProviderDef> = {
+  lovable: lovableProvider,
   openai: openaiProvider,
   anthropic: anthropicProvider,
   google: googleProvider,
@@ -13,15 +15,24 @@ export const PROVIDERS: Record<ProviderId, ProviderDef> = {
 };
 
 export const PROVIDER_LIST: ProviderDef[] = [
+  lovableProvider,
   openaiProvider,
   anthropicProvider,
   googleProvider,
   groqProvider,
 ];
 
+// Providers that don't need a user-supplied API key (handled server-side).
+export const KEYLESS_PROVIDERS: ProviderId[] = ['lovable'];
+
+export function providerNeedsKey(id: ProviderId): boolean {
+  return !KEYLESS_PROVIDERS.includes(id);
+}
+
 export async function callAI(req: AIRequest): Promise<AIResponse> {
   const settings = loadSettings();
-  if (!settings.primary?.apiKey) {
+  const primary = settings.primary;
+  if (!primary || (providerNeedsKey(primary.provider) && !primary.apiKey)) {
     throw new AIError('No AI provider configured. Open Settings → AI Configuration.');
   }
 
@@ -31,12 +42,14 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
   };
 
   try {
-    return await tryOne(settings.primary);
+    return await tryOne(primary);
   } catch (err) {
     const e = err as AIError;
-    if (settings.backup?.apiKey && (e.retryable || e.status === 401 || e.status === 404)) {
+    const backup = settings.backup;
+    const backupReady = backup && (!providerNeedsKey(backup.provider) || !!backup.apiKey);
+    if (backupReady && (e.retryable || e.status === 401 || e.status === 404)) {
       try {
-        return await tryOne(settings.backup);
+        return await tryOne(backup!);
       } catch (err2) {
         const e2 = err2 as AIError;
         throw new AIError(

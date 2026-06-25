@@ -24,5 +24,8 @@ export function clearSettings(): void {
 }
 
 export function hasPrimaryProvider(s: AISettings = loadSettings()): boolean {
-  return !!(s.primary?.apiKey && s.primary.provider && s.primary.model);
+  if (!s.primary?.provider || !s.primary.model) return false;
+  // Lovable provider doesn't need a user API key (handled server-side).
+  if (s.primary.provider === 'lovable') return true;
+  return !!s.primary.apiKey;
 }

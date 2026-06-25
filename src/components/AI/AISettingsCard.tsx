@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Sparkles, Eye, EyeOff, Loader2, Check, AlertCircle, ChevronDown, Trash2 } from 'lucide-react';
 import { useAISettings } from '@/hooks/useAISettings';
-import { PROVIDER_LIST, PROVIDERS } from '@/lib/ai/registry';
+import { PROVIDER_LIST, PROVIDERS, providerNeedsKey } from '@/lib/ai/registry';
 import { ProviderId, AIError } from '@/lib/ai/types';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -45,9 +45,9 @@ function ProviderSlot({
 }) {
   const { settings, update } = useAISettings();
   const current = settings[slot];
-  const [provider, setProvider] = useState<ProviderId>(current?.provider ?? 'openai');
+  const [provider, setProvider] = useState<ProviderId>(current?.provider ?? 'lovable');
   const [model, setModel] = useState<string>(
-    current?.model ?? PROVIDERS[current?.provider ?? 'openai'].defaultModel
+    current?.model ?? PROVIDERS[current?.provider ?? 'lovable'].defaultModel
   );
   const [apiKey, setApiKey] = useState<string>(current?.apiKey ?? '');
   const [showKey, setShowKey] = useState(false);
@@ -62,20 +62,22 @@ function ProviderSlot({
     setTestStatus('idle');
   };
 
+  const needsKey = providerNeedsKey(provider);
+
   const handleSave = () => {
-    if (!apiKey.trim()) {
+    if (needsKey && !apiKey.trim()) {
       toast.error('Enter an API key');
       return;
     }
     update({
       ...settings,
-      [slot]: { provider, model, apiKey: apiKey.trim() },
+      [slot]: { provider, model, apiKey: needsKey ? apiKey.trim() : '' },
     });
     toast.success(`${label} provider saved`);
   };
 
   const handleTest = async () => {
-    if (!apiKey.trim()) {
+    if (needsKey && !apiKey.trim()) {
       setTestStatus('error');
       setTestMessage('Enter an API key first');
       return;
@@ -83,7 +85,7 @@ function ProviderSlot({
     setTestStatus('loading');
     setTestMessage('');
     try {
-      await providerDef.testConnection({ apiKey: apiKey.trim(), model });
+      await providerDef.testConnection({ apiKey: needsKey ? apiKey.trim() : '', model });
       setTestStatus('success');
       setTestMessage('Connection OK');
     } catch (err) {
@@ -128,27 +130,33 @@ function ProviderSlot({
           </Select>
         </div>
       </div>
-      <div className="grid gap-2">
-        <Label>API key</Label>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input
-              type={showKey ? 'text' : 'password'}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder={`Paste your ${providerDef.label} key`}
-              className="pr-10 font-mono"
-            />
-            <button
-              type="button"
-              onClick={() => setShowKey((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
+      {needsKey ? (
+        <div className="grid gap-2">
+          <Label>API key</Label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                type={showKey ? 'text' : 'password'}
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder={`Paste your ${providerDef.label} key`}
+                className="pr-10 font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowKey((s) => !s)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="text-xs text-muted-foreground rounded-md border border-border bg-muted/30 p-3">
+          No key needed — uses Lovable AI Gateway server-side. Free trial credits apply; falls back to paid usage afterwards.
+        </div>
+      )}
       <div className="flex items-center gap-2 flex-wrap">
         <Button onClick={handleSave} size="sm">
           Save
