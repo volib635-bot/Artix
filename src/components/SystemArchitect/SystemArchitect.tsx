@@ -581,25 +581,11 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
 }
 
 function getIconFromType(type: string): string {
-  const map: Record<string, string> = {
-    database: 'Database',
-    server: 'Server',
-    frontend: 'Monitor',
-    cloud: 'Cloud',
-    api: 'Cpu',
-    storage: 'HardDrive',
-  };
-  return map[type] || 'Database';
+  const t = [...systemDesignTemplates, ...algorithmTemplates].find((x) => x.type === type);
+  return t?.icon || 'Database';
 }
 
 function getColorFromType(type: string): string {
-  const map: Record<string, string> = {
-    database: 'blue',
-    server: 'green',
-    frontend: 'purple',
-    cloud: 'cyan',
-    api: 'orange',
-    storage: 'pink',
-  };
-  return map[type] || 'blue';
+  const t = [...systemDesignTemplates, ...algorithmTemplates].find((x) => x.type === type);
+  return t?.color || 'blue';
 }
