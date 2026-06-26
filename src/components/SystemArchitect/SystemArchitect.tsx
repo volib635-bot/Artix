@@ -16,13 +16,14 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
-  ArrowLeft, Save, Plus, Pencil, Network, FlaskConical, Palette,
+  ArrowLeft, Save, Plus, Pencil, Network, FlaskConical, Palette, Sparkles,
   Database, Server, Monitor, Cloud, Cpu, HardDrive,
   LayoutList, ArrowUpDown, Repeat, Split,
   GitBranch, Circle, CheckCircle, ListOrdered, Layers,
   Link, Hash, Triangle, Variable, MousePointer,
   HelpCircle, Terminal,
 } from 'lucide-react';
+import { ArchitectureGeneratorDialog } from '@/components/AI/ArchitectureGeneratorDialog';
 import { Button } from '@/components/ui/button';
 import { SystemDesign, BoardState } from '@/hooks/useSystemDesigns';
 import { ArchitectNode } from './ArchitectNode';
@@ -73,9 +74,10 @@ interface SystemArchitectProps {
   onSave: (boardState: BoardState) => Promise<unknown>;
   onUpdateName?: (name: string) => Promise<unknown>;
   onBack: () => void;
+  documents?: Array<{ id: string; title: string; content: string }>;
 }
 
-export function SystemArchitect({ design, onSave, onUpdateName, onBack }: SystemArchitectProps) {
+export function SystemArchitect({ design, onSave, onUpdateName, onBack, documents = [] }: SystemArchitectProps) {
   const initialNodes: ArchitectFlowNode[] = design.board_state.nodes.map((n) => ({
     id: n.id,
     type: 'architect',
