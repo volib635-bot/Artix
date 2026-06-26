@@ -180,6 +180,7 @@ const ProjectWorkspace = () => {
         onSave={(boardState) => updateDesign({ id: currentDesign.id, board_state: boardState })}
         onUpdateName={(name) => updateDesign({ id: currentDesign.id, name })}
         onBack={() => setSelectedDesign(null)}
+        documents={documents.map((d) => ({ id: d.id, title: d.title, content: d.content || '' }))}
       />
     );
   }

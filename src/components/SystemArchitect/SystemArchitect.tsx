@@ -16,13 +16,14 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import {
-  ArrowLeft, Save, Plus, Pencil, Network, FlaskConical, Palette,
+  ArrowLeft, Save, Plus, Pencil, Network, FlaskConical, Palette, Sparkles,
   Database, Server, Monitor, Cloud, Cpu, HardDrive,
   LayoutList, ArrowUpDown, Repeat, Split,
   GitBranch, Circle, CheckCircle, ListOrdered, Layers,
   Link, Hash, Triangle, Variable, MousePointer,
   HelpCircle, Terminal,
 } from 'lucide-react';
+import { ArchitectureGeneratorDialog } from '@/components/AI/ArchitectureGeneratorDialog';
 import { Button } from '@/components/ui/button';
 import { SystemDesign, BoardState } from '@/hooks/useSystemDesigns';
 import { ArchitectNode } from './ArchitectNode';
@@ -73,9 +74,10 @@ interface SystemArchitectProps {
   onSave: (boardState: BoardState) => Promise<unknown>;
   onUpdateName?: (name: string) => Promise<unknown>;
   onBack: () => void;
+  documents?: Array<{ id: string; title: string; content: string }>;
 }
 
-export function SystemArchitect({ design, onSave, onUpdateName, onBack }: SystemArchitectProps) {
+export function SystemArchitect({ design, onSave, onUpdateName, onBack, documents = [] }: SystemArchitectProps) {
   const initialNodes: ArchitectFlowNode[] = design.board_state.nodes.map((n) => ({
     id: n.id,
     type: 'architect',
@@ -117,6 +119,7 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
   const [customNodeDialog, setCustomNodeDialog] = useState(false);
   const [customNodeColor, setCustomNodeColor] = useState('blue');
   const [customNodeLabel, setCustomNodeLabel] = useState('Custom Node');
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
 
   // Escape key exits draw mode
   useEffect(() => {
@@ -241,6 +244,49 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
     setCustomNodeColor('blue');
   };
 
+  const applyGeneratedBoard = useCallback((board: BoardState) => {
+    // Offset incoming nodes below existing content to avoid overlap.
+    const maxY = nodes.reduce((m, n) => Math.max(m, n.position.y), 0);
+    const yOffset = nodes.length > 0 ? maxY + 200 : 0;
+    // Remap incoming ids so they don't collide with existing ones.
+    const idMap = new Map<string, string>();
+    board.nodes.forEach((n) => {
+      nodeIdCounter.current += 1;
+      idMap.set(n.id, `node-${nodeIdCounter.current}`);
+    });
+    const newNodes: ArchitectFlowNode[] = board.nodes.map((n) => ({
+      id: idMap.get(n.id)!,
+      type: 'architect',
+      position: { x: n.position.x, y: n.position.y + yOffset },
+      data: {
+        label: n.data.label,
+        description: n.data.description,
+        nodeType: n.type,
+        icon: getIconFromType(n.type),
+        color: getColorFromType(n.type),
+      },
+    }));
+    const newEdges = board.edges
+      .filter((e) => idMap.has(e.source) && idMap.has(e.target))
+      .map((e, i) => ({
+        id: `edge-ai-${Date.now()}-${i}`,
+        source: idMap.get(e.source)!,
+        target: idMap.get(e.target)!,
+        type: 'smoothstep',
+        label: e.label || '',
+        markerEnd: { type: MarkerType.ArrowClosed as const, color: '#F59E0B' as const, width: 20, height: 20 },
+        style: { stroke: '#F59E0B' as const, strokeWidth: 2 },
+        labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
+        labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.9 },
+        labelBgPadding: [8, 4] as [number, number],
+        labelBgBorderRadius: 4,
+      }));
+    setNodes((nds) => [...nds, ...newNodes]);
+    setEdges((eds) => [...eds, ...(newEdges as typeof eds)]);
+    toast.success(`Added ${newNodes.length} nodes and ${newEdges.length} connections`);
+  }, [nodes, setNodes, setEdges]);
+
+
   const handleManualSave = async () => {
     const boardState: BoardState = {
       nodes: nodes.map((n) => ({
@@ -338,6 +384,11 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           >
             <Pencil className="h-4 w-4" />
             Draw
+          </Button>
+
+          <Button variant="outline" className="gap-2" onClick={() => setGenerateDialogOpen(true)}>
+            <Sparkles className="h-4 w-4" />
+            Generate
           </Button>
 
           <DropdownMenu>
@@ -517,30 +568,24 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack }: System
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ArchitectureGeneratorDialog
+        open={generateDialogOpen}
+        onOpenChange={setGenerateDialogOpen}
+        mode={mode}
+        documents={documents}
+        onApply={applyGeneratedBoard}
+      />
     </div>
   );
 }
 
 function getIconFromType(type: string): string {
-  const map: Record<string, string> = {
-    database: 'Database',
-    server: 'Server',
-    frontend: 'Monitor',
-    cloud: 'Cloud',
-    api: 'Cpu',
-    storage: 'HardDrive',
-  };
-  return map[type] || 'Database';
+  const t = [...systemDesignTemplates, ...algorithmTemplates].find((x) => x.type === type);
+  return t?.icon || 'Database';
 }
 
 function getColorFromType(type: string): string {
-  const map: Record<string, string> = {
-    database: 'blue',
-    server: 'green',
-    frontend: 'purple',
-    cloud: 'cyan',
-    api: 'orange',
-    storage: 'pink',
-  };
-  return map[type] || 'blue';
+  const t = [...systemDesignTemplates, ...algorithmTemplates].find((x) => x.type === type);
+  return t?.color || 'blue';
 }
