@@ -24,6 +24,7 @@ import {
   HelpCircle, Terminal,
 } from 'lucide-react';
 import { ArchitectureGeneratorDialog } from '@/components/AI/ArchitectureGeneratorDialog';
+import dagre from '@dagrejs/dagre';
 import { Button } from '@/components/ui/button';
 import { SystemDesign, BoardState } from '@/hooks/useSystemDesigns';
 import { ArchitectNode } from './ArchitectNode';
