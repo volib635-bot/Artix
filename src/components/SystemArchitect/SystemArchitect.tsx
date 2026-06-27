@@ -11,6 +11,7 @@ import {
   ConnectionLineType,
   Panel,
   MarkerType,
+  Position,
   type Node,
   type Edge,
 } from '@xyflow/react';
