@@ -294,8 +294,8 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
           x: xOffset + (pos?.x ?? 0) - NODE_W / 2,
           y: yOffset + (pos?.y ?? 0) - NODE_H / 2,
         },
-        sourcePosition: 'bottom' as unknown as Position,
-        targetPosition: 'top' as unknown as Position,
+        sourcePosition: Position.Bottom,
+        targetPosition: Position.Top,
         data: {
           label: n.data.label,
           description: n.data.description,
