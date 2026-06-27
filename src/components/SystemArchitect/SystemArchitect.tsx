@@ -11,6 +11,7 @@ import {
   ConnectionLineType,
   Panel,
   MarkerType,
+  Position,
   type Node,
   type Edge,
 } from '@xyflow/react';
@@ -257,15 +258,15 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
     const NODE_W = 220;
     const NODE_H = 90;
     const g = new dagre.graphlib.Graph();
-    // Top→bottom tree-like layout. Use tighter node separation and generous rank gap.
+    // Top→bottom tree-like layout with generous spacing for clean edge routing.
     g.setGraph({
       rankdir: 'TB',
-      align: 'UL',
-      nodesep: 80,
-      ranksep: 140,
+      nodesep: 110,
+      ranksep: 180,
+      edgesep: 40,
       marginx: 40,
       marginy: 40,
-      ranker: 'tight-tree',
+      ranker: 'network-simplex',
     });
     g.setDefaultEdgeLabel(() => ({}));
     board.nodes.forEach((n) => {
@@ -274,14 +275,14 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
     board.edges.forEach((e) => {
       const s = idMap.get(e.source);
       const t = idMap.get(e.target);
-      if (s && t) g.setEdge(s, t);
+      if (s && t) g.setEdge(s, t, { minlen: 1, weight: 1 });
     });
     dagre.layout(g);
 
     // Place laid-out graph below any existing content, starting from the top.
     const maxY = nodes.reduce((m, n) => Math.max(m, n.position.y + 120), 0);
     const xOffset = 80;
-    const yOffset = nodes.length > 0 ? maxY + 120 : 60;
+    const yOffset = nodes.length > 0 ? maxY + 160 : 60;
 
     const newNodes: ArchitectFlowNode[] = board.nodes.map((n) => {
       const id = idMap.get(n.id)!;
@@ -293,6 +294,8 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
           x: xOffset + (pos?.x ?? 0) - NODE_W / 2,
           y: yOffset + (pos?.y ?? 0) - NODE_H / 2,
         },
+        sourcePosition: Position.Bottom,
+        targetPosition: Position.Top,
         data: {
           label: n.data.label,
           description: n.data.description,
@@ -310,13 +313,14 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
         source: idMap.get(e.source)!,
         target: idMap.get(e.target)!,
         type: 'smoothstep',
+        pathOptions: { borderRadius: 16, offset: 20 },
         label: e.label || '',
-        markerEnd: { type: MarkerType.ArrowClosed as const, color: '#F59E0B' as const, width: 20, height: 20 },
-        style: { stroke: '#F59E0B' as const, strokeWidth: 2 },
-        labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 500 },
-        labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.9 },
+        markerEnd: { type: MarkerType.ArrowClosed as const, color: '#F59E0B' as const, width: 22, height: 22 },
+        style: { stroke: '#F59E0B' as const, strokeWidth: 2.5 },
+        labelStyle: { fill: 'hsl(var(--foreground))', fontWeight: 600, fontSize: 12 },
+        labelBgStyle: { fill: 'hsl(var(--card))', fillOpacity: 0.95 },
         labelBgPadding: [8, 4] as [number, number],
-        labelBgBorderRadius: 4,
+        labelBgBorderRadius: 6,
       }));
     setNodes((nds) => [...nds, ...newNodes]);
     setEdges((eds) => [...eds, ...(newEdges as typeof eds)]);
