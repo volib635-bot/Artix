@@ -257,7 +257,16 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
     const NODE_W = 220;
     const NODE_H = 90;
     const g = new dagre.graphlib.Graph();
-    g.setGraph({ rankdir: 'LR', nodesep: 60, ranksep: 120, marginx: 40, marginy: 40 });
+    // Top→bottom tree-like layout. Use tighter node separation and generous rank gap.
+    g.setGraph({
+      rankdir: 'TB',
+      align: 'UL',
+      nodesep: 80,
+      ranksep: 140,
+      marginx: 40,
+      marginy: 40,
+      ranker: 'tight-tree',
+    });
     g.setDefaultEdgeLabel(() => ({}));
     board.nodes.forEach((n) => {
       g.setNode(idMap.get(n.id)!, { width: NODE_W, height: NODE_H });
@@ -269,10 +278,10 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
     });
     dagre.layout(g);
 
-    // Place laid-out graph to the right of any existing content.
-    const maxX = nodes.reduce((m, n) => Math.max(m, n.position.x + 220), 0);
-    const xOffset = nodes.length > 0 ? maxX + 120 : 80;
-    const yOffset = 80;
+    // Place laid-out graph below any existing content, starting from the top.
+    const maxY = nodes.reduce((m, n) => Math.max(m, n.position.y + 120), 0);
+    const xOffset = 80;
+    const yOffset = nodes.length > 0 ? maxY + 120 : 60;
 
     const newNodes: ArchitectFlowNode[] = board.nodes.map((n) => {
       const id = idMap.get(n.id)!;
