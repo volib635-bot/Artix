@@ -31,7 +31,8 @@ import {
   FileCode,
   FileType,
   Sparkles,
-  Wand2
+  Wand2,
+  Bot
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -47,6 +48,7 @@ interface EditorToolbarProps {
   onBack: () => void;
   onGeneratePRD?: () => void;
   onGenerateVibe?: () => void;
+  onGenerateAgentic?: () => void;
 }
 
 const SaveIndicator = ({ status }: { status: SaveStatus }) => {

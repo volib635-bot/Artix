@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/resizable';
 import { PRDGeneratorDialog } from '@/components/AI/PRDGeneratorDialog';
 import { VibeCodingDialog } from '@/components/AI/VibeCodingDialog';
+import { AgenticWorkflowDialog } from '@/components/AI/AgenticWorkflowDialog';
 
 export interface Document {
   id: string;
@@ -34,6 +35,8 @@ export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
   const [format, setFormat] = useState<DocumentFormat>(document.format);
   const [prdOpen, setPrdOpen] = useState(false);
   const [vibeOpen, setVibeOpen] = useState(false);
+  const [agentOpen, setAgentOpen] = useState(false);
+
 
   const handleSave = useCallback(
     async (contentToSave: string) => {
@@ -95,6 +98,7 @@ export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
         onBack={onBack}
         onGeneratePRD={projectId ? () => setPrdOpen(true) : undefined}
         onGenerateVibe={projectId ? () => setVibeOpen(true) : undefined}
+        onGenerateAgentic={projectId ? () => setAgentOpen(true) : undefined}
       />
 
       {projectId && (
@@ -110,6 +114,14 @@ export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
           <VibeCodingDialog
             open={vibeOpen}
             onOpenChange={setVibeOpen}
+            sourceTitle={title}
+            sourceContent={content}
+            sourceDocumentId={document.id}
+            projectId={projectId}
+          />
+          <AgenticWorkflowDialog
+            open={agentOpen}
+            onOpenChange={setAgentOpen}
             sourceTitle={title}
             sourceContent={content}
             sourceDocumentId={document.id}
