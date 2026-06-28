@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      agentic_workflows: {
+        Row: {
+          agent_count: number
+          created_at: string
+          id: string
+          output_markdown: string
+          pattern: string
+          project_id: string
+          source_document_id: string | null
+          user_id: string
+        }
+        Insert: {
+          agent_count?: number
+          created_at?: string
+          id?: string
+          output_markdown: string
+          pattern: string
+          project_id: string
+          source_document_id?: string | null
+          user_id: string
+        }
+        Update: {
+          agent_count?: number
+          created_at?: string
+          id?: string
+          output_markdown?: string
+          pattern?: string
+          project_id?: string
+          source_document_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agentic_workflows_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agentic_workflows_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           content: string
