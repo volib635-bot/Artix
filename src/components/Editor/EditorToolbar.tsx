@@ -104,6 +104,7 @@ export function EditorToolbar({
   onBack,
   onGeneratePRD,
   onGenerateVibe,
+  onGenerateAgentic,
 }: EditorToolbarProps) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -196,6 +197,18 @@ export function EditorToolbar({
           >
             <Wand2 className="h-4 w-4 mr-1.5" />
             Vibe Prompt
+          </Button>
+        )}
+
+        {onGenerateAgentic && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onGenerateAgentic}
+            className="text-primary hover:text-primary"
+          >
+            <Bot className="h-4 w-4 mr-1.5" />
+            Agentic Flow
           </Button>
         )}
         
