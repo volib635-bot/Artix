@@ -3,7 +3,7 @@ import { anthropicProvider } from './providers/anthropic';
 import { googleProvider } from './providers/google';
 import { groqProvider } from './providers/groq';
 import { lovableProvider } from './providers/lovable';
-import { loadSettings } from './storage';
+import { loadSettings, isEncrypted, isUnlocked } from './storage';
 import { AIError, AIRequest, AIResponse, ProviderDef, ProviderId } from './types';
 
 export const PROVIDERS: Record<ProviderId, ProviderDef> = {
