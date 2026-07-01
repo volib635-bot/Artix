@@ -27,6 +27,7 @@ import { useAISettings } from '@/hooks/useAISettings';
 import { useAgenticWorkflows } from '@/hooks/useAgenticWorkflows';
 import { useDocuments } from '@/hooks/useDocuments';
 import { formatDistanceToNow } from 'date-fns';
+import { TokenEstimate } from './TokenEstimate';
 
 interface AgenticWorkflowDialogProps {
   open: boolean;
@@ -200,7 +201,7 @@ export function AgenticWorkflowDialog({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button onClick={handleGenerate} disabled={isGenerating || !isConfigured} className="gap-2">
                 {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
                 {output ? 'Regenerate' : 'Design Workflow'}
@@ -216,6 +217,18 @@ export function AgenticWorkflowDialog({
                   </Button>
                 </>
               )}
+              <TokenEstimate
+                input={[
+                  agenticSystemPrompt(pattern, agentCount),
+                  buildAgenticUserPrompt({
+                    sourceTitle,
+                    sourceMarkdown: sourceContent,
+                    customInstructions: customInstructions.trim() || undefined,
+                  }),
+                ]}
+                output={output}
+                maxTokens={4096}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4 flex-1 overflow-hidden">

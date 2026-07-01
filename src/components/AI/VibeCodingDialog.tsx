@@ -28,6 +28,7 @@ import { useAISettings } from '@/hooks/useAISettings';
 import { useVibeGenerations } from '@/hooks/useVibeGenerations';
 import { useDocuments } from '@/hooks/useDocuments';
 import { formatDistanceToNow } from 'date-fns';
+import { TokenEstimate } from './TokenEstimate';
 
 interface VibeCodingDialogProps {
   open: boolean;
@@ -206,7 +207,7 @@ export function VibeCodingDialog({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button onClick={handleGenerate} disabled={isGenerating || !isConfigured} className="gap-2">
                 {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                 {output ? 'Regenerate' : 'Generate Prompt'}
@@ -222,6 +223,18 @@ export function VibeCodingDialog({
                   </Button>
                 </>
               )}
+              <TokenEstimate
+                input={[
+                  vibeSystemPrompt(target, scope),
+                  buildVibeUserPrompt({
+                    sourceTitle,
+                    sourceMarkdown: sourceContent,
+                    customInstructions: customInstructions.trim() || undefined,
+                  }),
+                ]}
+                output={output}
+                maxTokens={4096}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4 flex-1 overflow-hidden">
