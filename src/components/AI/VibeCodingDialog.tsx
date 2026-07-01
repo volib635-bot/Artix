@@ -22,7 +22,7 @@ import {
   vibeSystemPrompt,
   buildVibeUserPrompt,
 } from '@/lib/ai/prompts/vibe';
-import { callAI } from '@/lib/ai/registry';
+import { streamAI } from '@/lib/ai/registry';
 import { AIError } from '@/lib/ai/types';
 import { useAISettings } from '@/hooks/useAISettings';
 import { useVibeGenerations } from '@/hooks/useVibeGenerations';
@@ -69,8 +69,9 @@ export function VibeCodingDialog({
     }
     setIsGenerating(true);
     setOutput('');
+    let full = '';
     try {
-      const res = await callAI({
+      const stream = streamAI({
         system: vibeSystemPrompt(target, scope),
         messages: [
           {
@@ -85,16 +86,21 @@ export function VibeCodingDialog({
         temperature: 0.5,
         maxTokens: 4096,
       });
-      setOutput(res.text);
-      try {
-        await createGeneration({
-          target,
-          scope,
-          output_markdown: res.text,
-          source_document_id: sourceDocumentId,
-        });
-      } catch {
-        /* best effort */
+      for await (const delta of stream) {
+        full += delta;
+        setOutput(full);
+      }
+      if (full.trim()) {
+        try {
+          await createGeneration({
+            target,
+            scope,
+            output_markdown: full,
+            source_document_id: sourceDocumentId,
+          });
+        } catch {
+          /* best effort */
+        }
       }
     } catch (err) {
       const e = err as AIError;

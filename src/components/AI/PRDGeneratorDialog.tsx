@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Loader2, Sparkles, Save, RefreshCw, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { PRDTemplate, PRD_TEMPLATES, systemPromptFor, buildUserPrompt } from '@/lib/ai/prompts/prd';
-import { callAI, streamAI } from '@/lib/ai/registry';
+import { streamAI } from '@/lib/ai/registry';
 import { AIError } from '@/lib/ai/types';
 import { useAISettings } from '@/hooks/useAISettings';
 import { usePRDGenerations } from '@/hooks/usePRDGenerations';
@@ -101,8 +101,6 @@ export function PRDGeneratorDialog({
       setIsGenerating(false);
     }
   };
-  // Reference callAI so it stays available for future use.
-  void callAI;
 
   const handleSaveAsDocument = async () => {
     if (!output.trim()) return;
