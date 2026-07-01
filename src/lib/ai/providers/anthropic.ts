@@ -1,4 +1,5 @@
 import { AIError, ProviderDef } from '../types';
+import { readSSELines } from '../streaming';
 
 export const anthropicProvider: ProviderDef = {
   id: 'anthropic',
@@ -39,6 +40,46 @@ export const anthropicProvider: ProviderDef = {
       .map((b: any) => b.text)
       .join('');
     return { text, provider: 'anthropic', model: cfg.model };
+  },
+  async *stream(req, cfg) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': cfg.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        max_tokens: req.maxTokens ?? 4096,
+        temperature: req.temperature ?? 0.7,
+        system: req.system,
+        messages: req.messages.map((m) => ({ role: m.role, content: m.content })),
+        stream: true,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new AIError(`Anthropic error: ${errText.slice(0, 200)}`, {
+        status: res.status,
+        retryable: res.status === 429 || res.status >= 500,
+      });
+    }
+    for await (const line of readSSELines(res)) {
+      if (!line.startsWith('data:')) continue;
+      const payload = line.slice(5).trim();
+      if (!payload) continue;
+      try {
+        const json = JSON.parse(payload);
+        if (json.type === 'content_block_delta' && json.delta?.type === 'text_delta') {
+          const text = json.delta.text as string;
+          if (text) yield text;
+        }
+      } catch {
+        /* ignore */
+      }
+    }
   },
   async testConnection(cfg) {
     await this.chat(
