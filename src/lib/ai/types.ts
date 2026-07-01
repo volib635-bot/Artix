@@ -39,6 +39,8 @@ export interface ProviderDef {
   defaultModel: string;
   models: { id: string; label: string }[];
   chat: (req: AIRequest, cfg: ProviderConfig) => Promise<AIResponse>;
+  /** Optional streaming variant. Yields text deltas as they arrive. */
+  stream?: (req: AIRequest, cfg: ProviderConfig) => AsyncIterable<string>;
   testConnection: (cfg: ProviderConfig) => Promise<void>;
 }
 
