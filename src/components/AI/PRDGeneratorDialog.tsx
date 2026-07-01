@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Loader2, Sparkles, Save, RefreshCw, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { PRDTemplate, PRD_TEMPLATES, systemPromptFor, buildUserPrompt } from '@/lib/ai/prompts/prd';
-import { callAI } from '@/lib/ai/registry';
+import { streamAI } from '@/lib/ai/registry';
 import { AIError } from '@/lib/ai/types';
 import { useAISettings } from '@/hooks/useAISettings';
 import { usePRDGenerations } from '@/hooks/usePRDGenerations';
@@ -62,8 +62,9 @@ export function PRDGeneratorDialog({
     }
     setIsGenerating(true);
     setOutput('');
+    let full = '';
     try {
-      const res = await callAI({
+      const stream = streamAI({
         system: systemPromptFor(template),
         messages: [
           {
@@ -78,15 +79,20 @@ export function PRDGeneratorDialog({
         temperature: 0.4,
         maxTokens: 4096,
       });
-      setOutput(res.text);
-      try {
-        await createGeneration({
-          template,
-          output_markdown: res.text,
-          source_document_id: sourceDocumentId,
-        });
-      } catch {
-        /* history is best-effort */
+      for await (const delta of stream) {
+        full += delta;
+        setOutput(full);
+      }
+      if (full.trim()) {
+        try {
+          await createGeneration({
+            template,
+            output_markdown: full,
+            source_document_id: sourceDocumentId,
+          });
+        } catch {
+          /* history is best-effort */
+        }
       }
     } catch (err) {
       const e = err as AIError;

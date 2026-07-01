@@ -1,5 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { AIError, ProviderDef } from '../types';
+import { readOpenAICompatibleDeltas } from '../streaming';
+
+const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-gateway-chat`;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 export const lovableProvider: ProviderDef = {
   id: 'lovable',
@@ -43,6 +47,36 @@ export const lovableProvider: ProviderDef = {
       provider: 'lovable',
       model: cfg.model,
     };
+  },
+  async *stream(req, cfg) {
+    const messages = [
+      ...(req.system ? [{ role: 'system', content: req.system }] : []),
+      ...req.messages,
+    ];
+    // Direct fetch — supabase.functions.invoke buffers the response body.
+    const res = await fetch(FN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: ANON_KEY,
+        Authorization: `Bearer ${ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        temperature: req.temperature ?? 0.7,
+        max_tokens: req.maxTokens,
+        stream: true,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new AIError(`Lovable AI error: ${errText.slice(0, 200)}`, {
+        status: res.status,
+        retryable: res.status === 429 || res.status >= 500,
+      });
+    }
+    yield* readOpenAICompatibleDeltas(res);
   },
   async testConnection(cfg) {
     await this.chat(

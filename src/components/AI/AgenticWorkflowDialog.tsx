@@ -21,7 +21,7 @@ import {
   agenticSystemPrompt,
   buildAgenticUserPrompt,
 } from '@/lib/ai/prompts/agentic';
-import { callAI } from '@/lib/ai/registry';
+import { streamAI } from '@/lib/ai/registry';
 import { AIError } from '@/lib/ai/types';
 import { useAISettings } from '@/hooks/useAISettings';
 import { useAgenticWorkflows } from '@/hooks/useAgenticWorkflows';
@@ -68,8 +68,9 @@ export function AgenticWorkflowDialog({
     }
     setIsGenerating(true);
     setOutput('');
+    let full = '';
     try {
-      const res = await callAI({
+      const stream = streamAI({
         system: agenticSystemPrompt(pattern, agentCount),
         messages: [
           {
@@ -84,16 +85,21 @@ export function AgenticWorkflowDialog({
         temperature: 0.4,
         maxTokens: 4096,
       });
-      setOutput(res.text);
-      try {
-        await createWorkflow({
-          pattern,
-          agent_count: agentCount,
-          output_markdown: res.text,
-          source_document_id: sourceDocumentId,
-        });
-      } catch {
-        /* best effort */
+      for await (const delta of stream) {
+        full += delta;
+        setOutput(full);
+      }
+      if (full.trim()) {
+        try {
+          await createWorkflow({
+            pattern,
+            agent_count: agentCount,
+            output_markdown: full,
+            source_document_id: sourceDocumentId,
+          });
+        } catch {
+          /* best effort */
+        }
       }
     } catch (err) {
       const e = err as AIError;

@@ -1,4 +1,5 @@
 import { AIError, ProviderDef } from '../types';
+import { readOpenAICompatibleDeltas } from '../streaming';
 
 export const groqProvider: ProviderDef = {
   id: 'groq',
@@ -40,6 +41,34 @@ export const groqProvider: ProviderDef = {
       provider: 'groq',
       model: cfg.model,
     };
+  },
+  async *stream(req, cfg) {
+    const messages = [
+      ...(req.system ? [{ role: 'system', content: req.system }] : []),
+      ...req.messages,
+    ];
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${cfg.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        temperature: req.temperature ?? 0.7,
+        max_tokens: req.maxTokens,
+        stream: true,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new AIError(`Groq error: ${errText.slice(0, 200)}`, {
+        status: res.status,
+        retryable: res.status === 429 || res.status >= 500,
+      });
+    }
+    yield* readOpenAICompatibleDeltas(res);
   },
   async testConnection(cfg) {
     await this.chat(

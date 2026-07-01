@@ -65,3 +65,43 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
     throw err;
   }
 }
+
+/**
+ * Streaming variant of {@link callAI}. Yields text deltas as they arrive from
+ * the primary provider. If the primary provider does not implement `stream`,
+ * falls back to a single non-streaming call and yields the full response once.
+ * On stream failure, retries with the backup provider (if any).
+ */
+export async function* streamAI(req: AIRequest): AsyncGenerator<string> {
+  if (isEncrypted() && !isUnlocked()) {
+    throw new AIError('AI keys are locked. Open Settings → AI Configuration and unlock.');
+  }
+  const settings = loadSettings();
+  const primary = settings.primary;
+  if (!primary || (providerNeedsKey(primary.provider) && !primary.apiKey)) {
+    throw new AIError('No AI provider configured. Open Settings → AI Configuration.');
+  }
+
+  const tryStream = async function* (cfg: { provider: ProviderId; model: string; apiKey: string }) {
+    const provider = PROVIDERS[cfg.provider];
+    if (provider.stream) {
+      yield* provider.stream(req, { apiKey: cfg.apiKey, model: cfg.model });
+    } else {
+      const res = await provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model });
+      if (res.text) yield res.text;
+    }
+  };
+
+  try {
+    yield* tryStream(primary);
+  } catch (err) {
+    const e = err as AIError;
+    const backup = settings.backup;
+    const backupReady = backup && (!providerNeedsKey(backup.provider) || !!backup.apiKey);
+    if (backupReady && (e.retryable || e.status === 401 || e.status === 404)) {
+      yield* tryStream(backup!);
+      return;
+    }
+    throw err;
+  }
+}

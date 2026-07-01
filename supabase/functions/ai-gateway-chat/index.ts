@@ -19,13 +19,15 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { model, messages, temperature, max_tokens } = body ?? {};
+    const { model, messages, temperature, max_tokens, stream } = body ?? {};
     if (!model || !Array.isArray(messages)) {
       return new Response(
         JSON.stringify({ error: "Missing 'model' or 'messages'" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const wantStream = stream === true;
 
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -38,8 +40,21 @@ Deno.serve(async (req) => {
         messages,
         ...(typeof temperature === "number" ? { temperature } : {}),
         ...(typeof max_tokens === "number" ? { max_tokens } : {}),
+        ...(wantStream ? { stream: true } : {}),
       }),
     });
+
+    if (wantStream && upstream.ok && upstream.body) {
+      // Pass the SSE stream through unchanged.
+      return new Response(upstream.body, {
+        status: upstream.status,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": upstream.headers.get("Content-Type") ?? "text/event-stream",
+          "Cache-Control": "no-cache",
+        },
+      });
+    }
 
     const text = await upstream.text();
     return new Response(text, {
