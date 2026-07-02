@@ -46,9 +46,9 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
   }
 
 
-  const tryOne = async (cfg: { provider: ProviderId; model: string; apiKey: string }) => {
+  const tryOne = async (cfg: { provider: ProviderId; model: string; apiKey: string; baseUrl?: string }) => {
     const provider = PROVIDERS[cfg.provider];
-    return provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model });
+    return provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model, baseUrl: cfg.baseUrl });
   };
 
   try {
@@ -88,12 +88,12 @@ export async function* streamAI(req: AIRequest): AsyncGenerator<string> {
     throw new AIError('No AI provider configured. Open Settings → AI Configuration.');
   }
 
-  const tryStream = async function* (cfg: { provider: ProviderId; model: string; apiKey: string }) {
+  const tryStream = async function* (cfg: { provider: ProviderId; model: string; apiKey: string; baseUrl?: string }) {
     const provider = PROVIDERS[cfg.provider];
     if (provider.stream) {
-      yield* provider.stream(req, { apiKey: cfg.apiKey, model: cfg.model });
+      yield* provider.stream(req, { apiKey: cfg.apiKey, model: cfg.model, baseUrl: cfg.baseUrl });
     } else {
-      const res = await provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model });
+      const res = await provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model, baseUrl: cfg.baseUrl });
       if (res.text) yield res.text;
     }
   };
