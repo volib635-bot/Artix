@@ -31,6 +31,7 @@ export class AIError extends Error {
 export interface ProviderConfig {
   apiKey: string;
   model: string;
+  baseUrl?: string;
 }
 
 export interface ProviderDef {
@@ -38,6 +39,11 @@ export interface ProviderDef {
   label: string;
   defaultModel: string;
   models: { id: string; label: string }[];
+  /** If true, UI lets user type a custom model id in addition to the preset list. */
+  allowCustomModel?: boolean;
+  /** If true, UI shows a baseUrl input (e.g. for local Ollama). */
+  needsBaseUrl?: boolean;
+  defaultBaseUrl?: string;
   chat: (req: AIRequest, cfg: ProviderConfig) => Promise<AIResponse>;
   /** Optional streaming variant. Yields text deltas as they arrive. */
   stream?: (req: AIRequest, cfg: ProviderConfig) => AsyncIterable<string>;
@@ -45,6 +51,6 @@ export interface ProviderDef {
 }
 
 export interface AISettings {
-  primary?: { provider: ProviderId; model: string; apiKey: string };
-  backup?: { provider: ProviderId; model: string; apiKey: string };
+  primary?: { provider: ProviderId; model: string; apiKey: string; baseUrl?: string };
+  backup?: { provider: ProviderId; model: string; apiKey: string; baseUrl?: string };
 }
