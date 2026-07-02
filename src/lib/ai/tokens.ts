@@ -56,6 +56,14 @@ const PRICING: Record<ProviderId, Record<string, PriceRow> & { default?: PriceRo
   lovable: {
     default: { in: 0, out: 0, unit: 'credits' },
   },
+  openrouter: {
+    // Pricing varies per model on OpenRouter. Show 0 by default; actual
+    // billing is tracked on the OpenRouter dashboard.
+    default: { in: 0, out: 0 },
+  },
+  ollama: {
+    default: { in: 0, out: 0 },
+  },
 };
 
 export function estimateCost(

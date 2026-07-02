@@ -1,0 +1,92 @@
+import { AIError, ProviderDef } from '../types';
+import { readOpenAICompatibleDeltas } from '../streaming';
+
+const BASE = 'https://openrouter.ai/api/v1/chat/completions';
+
+// Popular free/cheap OpenRouter models. Users can also type any custom id.
+export const openrouterProvider: ProviderDef = {
+  id: 'openrouter',
+  label: 'OpenRouter',
+  defaultModel: 'meta-llama/llama-3.3-70b-instruct',
+  allowCustomModel: true,
+  models: [
+    { id: 'meta-llama/llama-3.3-70b-instruct', label: 'Llama 3.3 70B Instruct' },
+    { id: 'meta-llama/llama-3.1-8b-instruct:free', label: 'Llama 3.1 8B (free)' },
+    { id: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash (free)' },
+    { id: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
+    { id: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
+    { id: 'deepseek/deepseek-chat', label: 'DeepSeek Chat' },
+    { id: 'qwen/qwen-2.5-72b-instruct', label: 'Qwen 2.5 72B' },
+    { id: 'mistralai/mistral-nemo:free', label: 'Mistral Nemo (free)' },
+  ],
+  async chat(req, cfg) {
+    const messages = [
+      ...(req.system ? [{ role: 'system', content: req.system }] : []),
+      ...req.messages,
+    ];
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${cfg.apiKey}`,
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://fenix.app',
+        'X-Title': 'Fenix',
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        temperature: req.temperature ?? 0.7,
+        max_tokens: req.maxTokens,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new AIError(`OpenRouter error: ${errText.slice(0, 200)}`, {
+        status: res.status,
+        retryable: res.status === 429 || res.status >= 500,
+      });
+    }
+    const data = await res.json();
+    return {
+      text: data.choices?.[0]?.message?.content ?? '',
+      provider: 'openrouter',
+      model: cfg.model,
+    };
+  },
+  async *stream(req, cfg) {
+    const messages = [
+      ...(req.system ? [{ role: 'system', content: req.system }] : []),
+      ...req.messages,
+    ];
+    const res = await fetch(BASE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${cfg.apiKey}`,
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://fenix.app',
+        'X-Title': 'Fenix',
+      },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages,
+        temperature: req.temperature ?? 0.7,
+        max_tokens: req.maxTokens,
+        stream: true,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new AIError(`OpenRouter error: ${errText.slice(0, 200)}`, {
+        status: res.status,
+        retryable: res.status === 429 || res.status >= 500,
+      });
+    }
+    yield* readOpenAICompatibleDeltas(res);
+  },
+  async testConnection(cfg) {
+    await this.chat(
+      { messages: [{ role: 'user', content: "Reply with 'ok'." }], maxTokens: 5 },
+      cfg
+    );
+  },
+};

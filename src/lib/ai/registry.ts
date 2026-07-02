@@ -3,6 +3,8 @@ import { anthropicProvider } from './providers/anthropic';
 import { googleProvider } from './providers/google';
 import { groqProvider } from './providers/groq';
 import { lovableProvider } from './providers/lovable';
+import { openrouterProvider } from './providers/openrouter';
+import { ollamaProvider } from './providers/ollama';
 import { loadSettings, isEncrypted, isUnlocked } from './storage';
 import { AIError, AIRequest, AIResponse, ProviderDef, ProviderId } from './types';
 
@@ -12,6 +14,8 @@ export const PROVIDERS: Record<ProviderId, ProviderDef> = {
   anthropic: anthropicProvider,
   google: googleProvider,
   groq: groqProvider,
+  openrouter: openrouterProvider,
+  ollama: ollamaProvider,
 };
 
 export const PROVIDER_LIST: ProviderDef[] = [
@@ -20,10 +24,12 @@ export const PROVIDER_LIST: ProviderDef[] = [
   anthropicProvider,
   googleProvider,
   groqProvider,
+  openrouterProvider,
+  ollamaProvider,
 ];
 
-// Providers that don't need a user-supplied API key (handled server-side).
-export const KEYLESS_PROVIDERS: ProviderId[] = ['lovable'];
+// Providers that don't need a user-supplied API key (handled server-side or local).
+export const KEYLESS_PROVIDERS: ProviderId[] = ['lovable', 'ollama'];
 
 export function providerNeedsKey(id: ProviderId): boolean {
   return !KEYLESS_PROVIDERS.includes(id);
@@ -40,9 +46,9 @@ export async function callAI(req: AIRequest): Promise<AIResponse> {
   }
 
 
-  const tryOne = async (cfg: { provider: ProviderId; model: string; apiKey: string }) => {
+  const tryOne = async (cfg: { provider: ProviderId; model: string; apiKey: string; baseUrl?: string }) => {
     const provider = PROVIDERS[cfg.provider];
-    return provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model });
+    return provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model, baseUrl: cfg.baseUrl });
   };
 
   try {
@@ -82,12 +88,12 @@ export async function* streamAI(req: AIRequest): AsyncGenerator<string> {
     throw new AIError('No AI provider configured. Open Settings → AI Configuration.');
   }
 
-  const tryStream = async function* (cfg: { provider: ProviderId; model: string; apiKey: string }) {
+  const tryStream = async function* (cfg: { provider: ProviderId; model: string; apiKey: string; baseUrl?: string }) {
     const provider = PROVIDERS[cfg.provider];
     if (provider.stream) {
-      yield* provider.stream(req, { apiKey: cfg.apiKey, model: cfg.model });
+      yield* provider.stream(req, { apiKey: cfg.apiKey, model: cfg.model, baseUrl: cfg.baseUrl });
     } else {
-      const res = await provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model });
+      const res = await provider.chat(req, { apiKey: cfg.apiKey, model: cfg.model, baseUrl: cfg.baseUrl });
       if (res.text) yield res.text;
     }
   };
