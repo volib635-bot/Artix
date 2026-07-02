@@ -56,6 +56,9 @@ function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
     current?.model ?? PROVIDERS[current?.provider ?? 'lovable'].defaultModel
   );
   const [apiKey, setApiKey] = useState<string>(current?.apiKey ?? '');
+  const [baseUrl, setBaseUrl] = useState<string>(
+    current?.baseUrl ?? PROVIDERS[current?.provider ?? 'lovable'].defaultBaseUrl ?? ''
+  );
   const [showKey, setShowKey] = useState(false);
   const [testStatus, setTestStatus] = useState<TestStatus>('idle');
   const [testMessage, setTestMessage] = useState('');
@@ -65,10 +68,14 @@ function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
   const handleProviderChange = (p: ProviderId) => {
     setProvider(p);
     setModel(PROVIDERS[p].defaultModel);
+    setBaseUrl(PROVIDERS[p].defaultBaseUrl ?? '');
     setTestStatus('idle');
   };
 
   const needsKey = providerNeedsKey(provider);
+  const needsBaseUrl = !!providerDef.needsBaseUrl;
+  const allowCustomModel = !!providerDef.allowCustomModel;
+  const isPresetModel = providerDef.models.some((m) => m.id === model);
 
   const handleSave = () => {
     if (needsKey && !apiKey.trim()) {
@@ -78,7 +85,12 @@ function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
     try {
       update({
         ...settings,
-        [slot]: { provider, model, apiKey: needsKey ? apiKey.trim() : '' },
+        [slot]: {
+          provider,
+          model: model.trim(),
+          apiKey: needsKey ? apiKey.trim() : '',
+          ...(needsBaseUrl ? { baseUrl: baseUrl.trim() || providerDef.defaultBaseUrl } : {}),
+        },
       });
       toast.success(`${label} provider saved`);
     } catch (err) {
@@ -95,7 +107,11 @@ function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
     setTestStatus('loading');
     setTestMessage('');
     try {
-      await providerDef.testConnection({ apiKey: needsKey ? apiKey.trim() : '', model });
+      await providerDef.testConnection({
+        apiKey: needsKey ? apiKey.trim() : '',
+        model: model.trim(),
+        baseUrl: needsBaseUrl ? (baseUrl.trim() || providerDef.defaultBaseUrl) : undefined,
+      });
       setTestStatus('success');
       setTestMessage('Connection OK');
     } catch (err) {
@@ -126,9 +142,15 @@ function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
         </div>
         <div className="grid gap-2">
           <Label>Model</Label>
-          <Select value={model} onValueChange={setModel}>
+          <Select
+            value={isPresetModel ? model : '__custom__'}
+            onValueChange={(v) => {
+              if (v === '__custom__') return;
+              setModel(v);
+            }}
+          >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Pick a model" />
             </SelectTrigger>
             <SelectContent>
               {providerDef.models.map((m) => (
@@ -136,10 +158,36 @@ function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
                   {m.label}
                 </SelectItem>
               ))}
+              {allowCustomModel && (
+                <SelectItem value="__custom__">Custom…</SelectItem>
+              )}
             </SelectContent>
           </Select>
+          {allowCustomModel && (
+            <Input
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="Or type a custom model id"
+              className="font-mono text-xs"
+            />
+          )}
         </div>
       </div>
+      {needsBaseUrl && (
+        <div className="grid gap-2">
+          <Label>Base URL</Label>
+          <Input
+            value={baseUrl}
+            onChange={(e) => setBaseUrl(e.target.value)}
+            placeholder={providerDef.defaultBaseUrl}
+            className="font-mono text-xs"
+          />
+          <p className="text-xs text-muted-foreground">
+            Ollama must be running locally. If you get a CORS error, restart with{' '}
+            <code className="text-[10px]">OLLAMA_ORIGINS=* ollama serve</code>.
+          </p>
+        </div>
+      )}
       {needsKey ? (
         <div className="grid gap-2">
           <Label>API key</Label>
@@ -162,9 +210,13 @@ function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
             </div>
           </div>
         </div>
-      ) : (
+      ) : provider === 'lovable' ? (
         <div className="text-xs text-muted-foreground rounded-md border border-border bg-muted/30 p-3">
           No key needed — uses Lovable AI Gateway server-side. Free trial credits apply; falls back to paid usage afterwards.
+        </div>
+      ) : (
+        <div className="text-xs text-muted-foreground rounded-md border border-border bg-muted/30 p-3">
+          No key needed — calls your local Ollama server directly from the browser.
         </div>
       )}
       <div className="flex items-center gap-2 flex-wrap">
