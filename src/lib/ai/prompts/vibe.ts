@@ -57,22 +57,28 @@ ${SCOPE_GUIDANCE[scope]}
 ${OUTPUT_CONTRACT}`;
 }
 
+import { compressSource } from '../compress';
+
 export function buildVibeUserPrompt(args: {
   sourceTitle: string;
   sourceMarkdown: string;
   customInstructions?: string;
+  maxSourceTokens?: number;
 }): string {
-  const { sourceTitle, sourceMarkdown, customInstructions } = args;
-  const trimmed =
-    sourceMarkdown.length > 12000
-      ? sourceMarkdown.slice(0, 12000) + '\n\n[... source truncated for length ...]'
-      : sourceMarkdown;
+  const { sourceTitle, sourceMarkdown, customInstructions, maxSourceTokens = 3000 } = args;
+  const { text, compressed, strategy, originalTokens, finalTokens } = compressSource(
+    sourceMarkdown,
+    maxSourceTokens,
+  );
+  const notice = compressed
+    ? `\n\n[Note: source was compressed (${strategy}) from ~${originalTokens} to ~${finalTokens} tokens.]`
+    : '';
   return `Source document title: ${sourceTitle || 'Untitled'}
 
 Source content:
 """
-${trimmed}
-"""
+${text}
+"""${notice}
 
 ${customInstructions ? `Additional instructions from the user:\n${customInstructions}\n\n` : ''}Produce the vibe-coding prompt now.`;
 }
