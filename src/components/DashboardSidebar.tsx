@@ -22,10 +22,10 @@ export function DashboardSidebar({ onLogout }: DashboardSidebarProps) {
     <motion.aside
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="hidden md:flex flex-col h-screen sticky top-0 w-64 shrink-0 border-r border-border/50 bg-card/60 backdrop-blur-xl z-40"
+      className="hidden md:flex flex-col h-screen sticky top-0 w-56 shrink-0 z-40 backdrop-blur-md bg-gradient-to-b from-sidebar/90 via-sidebar/80 to-sidebar/70"
     >
       {/* Brand */}
-      <div className="h-16 flex items-center gap-2 px-5 border-b border-border/50">
+      <div className="h-16 flex items-center gap-2 px-5">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center">
           <img src={fenixLogo} alt="Fenix" className="w-8 h-8" />
         </div>
