@@ -58,11 +58,11 @@ export function DashboardSidebar({ onLogout }: DashboardSidebarProps) {
       </nav>
 
       {/* Utility bottom */}
-      <div className="p-3 border-t border-border/50 space-y-1">
+      <div className="mt-auto px-3 pb-2 pt-4 border-t border-slate-800/50 space-y-1">
         <button
           onClick={() => navigate('/settings')}
           className={cn(
-            'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all',
+            'w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-all',
             pathname === '/settings'
               ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
@@ -74,7 +74,7 @@ export function DashboardSidebar({ onLogout }: DashboardSidebarProps) {
         <Button
           variant="ghost"
           onClick={onLogout}
-          className="w-full justify-start gap-3 px-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          className="w-full justify-start gap-3 px-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
         >
           <LogOut className="h-4 w-4" />
           Sign Out
