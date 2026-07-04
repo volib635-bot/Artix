@@ -44,17 +44,14 @@ export function DashboardSidebar({ onLogout }: DashboardSidebarProps) {
               key={item.label}
               to={item.to}
               className={cn(
-                'group flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all',
+                'group flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-all',
                 active
-                  ? 'bg-primary/10 text-primary shadow-[0_0_20px_-8px_hsl(var(--primary)/0.6)]'
+                  ? 'bg-primary/10 text-primary'
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               )}
             >
               <item.icon className={cn('h-4 w-4', active && 'text-primary')} />
               <span>{item.label}</span>
-              {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-              )}
             </NavLink>
           );
         })}
