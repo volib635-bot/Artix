@@ -22,10 +22,10 @@ export function DashboardSidebar({ onLogout }: DashboardSidebarProps) {
     <motion.aside
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="hidden md:flex flex-col h-screen sticky top-0 w-64 shrink-0 border-r border-border/50 bg-card/60 backdrop-blur-xl z-40"
+      className="hidden md:flex flex-col h-screen sticky top-0 w-56 shrink-0 z-40 backdrop-blur-md bg-gradient-to-b from-sidebar/90 via-sidebar/80 to-sidebar/70"
     >
       {/* Brand */}
-      <div className="h-16 flex items-center gap-2 px-5 border-b border-border/50">
+      <div className="h-16 flex items-center gap-2 px-5">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center">
           <img src={fenixLogo} alt="Fenix" className="w-8 h-8" />
         </div>
@@ -44,28 +44,25 @@ export function DashboardSidebar({ onLogout }: DashboardSidebarProps) {
               key={item.label}
               to={item.to}
               className={cn(
-                'group flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all',
+                'group flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-all',
                 active
-                  ? 'bg-primary/10 text-primary shadow-[0_0_20px_-8px_hsl(var(--primary)/0.6)]'
+                  ? 'bg-primary/10 text-primary'
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               )}
             >
               <item.icon className={cn('h-4 w-4', active && 'text-primary')} />
               <span>{item.label}</span>
-              {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-              )}
             </NavLink>
           );
         })}
       </nav>
 
       {/* Utility bottom */}
-      <div className="p-3 border-t border-border/50 space-y-1">
+      <div className="mt-auto px-3 pb-2 pt-4 border-t border-slate-800/50 space-y-1">
         <button
           onClick={() => navigate('/settings')}
           className={cn(
-            'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all',
+            'w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm transition-all',
             pathname === '/settings'
               ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
@@ -77,7 +74,7 @@ export function DashboardSidebar({ onLogout }: DashboardSidebarProps) {
         <Button
           variant="ghost"
           onClick={onLogout}
-          className="w-full justify-start gap-3 px-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          className="w-full justify-start gap-3 px-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
         >
           <LogOut className="h-4 w-4" />
           Sign Out
