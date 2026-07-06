@@ -42,10 +42,9 @@ export function ExecutiveDashboard({ onNewProject, onGoToProjects }: ExecutiveDa
   };
 
   // Usage widget: derive a simple projection from configured primary provider
-  const primary = (settings.primaryProvider ?? 'lovable') as ProviderId;
+  const primary: ProviderId = settings.primary?.provider ?? 'lovable';
   const model =
-    settings.providers?.[primary]?.model ??
-    (primary === 'lovable' ? 'google/gemini-2.5-flash' : 'default');
+    settings.primary?.model ?? (primary === 'lovable' ? 'google/gemini-2.5-flash' : 'default');
   const sampleIn = 8000;
   const sampleOut = 2000;
   const perRequest = estimateCost(primary, model, sampleIn, sampleOut);
