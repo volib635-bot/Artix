@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FolderPlus, Loader2, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,7 @@ interface ProjectGridProps {
   onDelete: (id: string) => Promise<void>;
   onRename: (id: string, name: string) => Promise<void>;
   isCreating?: boolean;
+  openCreateNonce?: number;
 }
 
 export function ProjectGrid({
@@ -41,8 +42,14 @@ export function ProjectGrid({
   onDelete,
   onRename,
   isCreating,
+  openCreateNonce,
 }: ProjectGridProps) {
   const [createModalOpen, setCreateModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (openCreateNonce && openCreateNonce > 0) setCreateModalOpen(true);
+  }, [openCreateNonce]);
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
