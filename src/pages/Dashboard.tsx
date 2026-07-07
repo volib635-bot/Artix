@@ -32,6 +32,7 @@ const Dashboard = () => {
 
   const [view, setView] = useState<DashboardView>('dashboard');
   const [createNonce, setCreateNonce] = useState(0);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { data: recents = [], isLoading: recentsLoading } = useRecentActivity(20);
 
   useEffect(() => {
