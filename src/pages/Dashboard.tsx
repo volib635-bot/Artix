@@ -32,6 +32,7 @@ const Dashboard = () => {
 
   const [view, setView] = useState<DashboardView>('dashboard');
   const [createNonce, setCreateNonce] = useState(0);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { data: recents = [], isLoading: recentsLoading } = useRecentActivity(20);
 
   useEffect(() => {
@@ -99,7 +100,10 @@ const Dashboard = () => {
         isAuthenticated={!!user}
         onLogout={handleLogout}
         onUpgrade={() => toast.info('Upgrade plans coming soon.')}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
       />
+
 
       <div className="flex-1 flex flex-col h-screen overflow-y-auto">
         {/* Mobile top bar */}
