@@ -8,6 +8,7 @@ import {
   LogOut,
   LogIn,
   Sparkles,
+  Code2,
 } from 'lucide-react';
 import fenixLogo from '@/assets/fenix-logo.png';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ const primaryNav: { label: string; view: DashboardView; icon: typeof LayoutDashb
   { label: 'Dashboard', view: 'dashboard', icon: LayoutDashboard },
   { label: 'All Projects', view: 'projects', icon: FolderKanban },
   { label: 'Recents', view: 'recents', icon: Clock },
+  { label: 'API Usage', view: 'dashboard', icon: Code2 },
 ];
 
 export function DashboardSidebar({
