@@ -171,6 +171,13 @@ const Dashboard = () => {
                 <ExecutiveDashboard
                   onNewProject={triggerNewProject}
                   onGoToProjects={() => setView('projects')}
+                  projects={projects}
+                  onSelectProject={handleSelectProject}
+                  onDeleteProject={(p) => handleDeleteProject(p.id)}
+                  onRenameProject={(p) => {
+                    const name = window.prompt('Rename project', p.name);
+                    if (name && name.trim()) handleRenameProject(p.id, name.trim());
+                  }}
                 />
               )}
 
