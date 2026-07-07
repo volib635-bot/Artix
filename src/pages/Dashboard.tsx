@@ -100,7 +100,10 @@ const Dashboard = () => {
         isAuthenticated={!!user}
         onLogout={handleLogout}
         onUpgrade={() => toast.info('Upgrade plans coming soon.')}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
       />
+
 
       <div className="flex-1 flex flex-col h-screen overflow-y-auto">
         {/* Mobile top bar */}
