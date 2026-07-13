@@ -19,8 +19,7 @@ export function estimateMessagesTokens(parts: (string | undefined | null)[]): nu
 }
 
 // USD per 1M tokens. Rough public pricing snapshots; used only to give
-// the user an order-of-magnitude estimate. Lovable AI (gateway) is
-// billed in credits, not USD, so we surface it as "credits" instead.
+// the user an order-of-magnitude estimate.
 type PriceRow = { in: number; out: number; unit?: 'usd' | 'credits' };
 
 const PRICING: Record<ProviderId, Record<string, PriceRow> & { default?: PriceRow }> = {
@@ -52,9 +51,6 @@ const PRICING: Record<ProviderId, Record<string, PriceRow> & { default?: PriceRo
     'llama-3.3-70b-versatile': { in: 0.59, out: 0.79 },
     'llama-3.1-8b-instant': { in: 0.05, out: 0.08 },
     'mixtral-8x7b-32768': { in: 0.24, out: 0.24 },
-  },
-  lovable: {
-    default: { in: 0, out: 0, unit: 'credits' },
   },
   openrouter: {
     // Pricing varies per model on OpenRouter. Show 0 by default; actual

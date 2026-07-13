@@ -2,14 +2,12 @@ import { openaiProvider } from './providers/openai';
 import { anthropicProvider } from './providers/anthropic';
 import { googleProvider } from './providers/google';
 import { groqProvider } from './providers/groq';
-import { lovableProvider } from './providers/lovable';
 import { openrouterProvider } from './providers/openrouter';
 import { ollamaProvider } from './providers/ollama';
 import { loadSettings, isEncrypted, isUnlocked } from './storage';
 import { AIError, AIRequest, AIResponse, ProviderDef, ProviderId } from './types';
 
 export const PROVIDERS: Record<ProviderId, ProviderDef> = {
-  lovable: lovableProvider,
   openai: openaiProvider,
   anthropic: anthropicProvider,
   google: googleProvider,
@@ -19,7 +17,6 @@ export const PROVIDERS: Record<ProviderId, ProviderDef> = {
 };
 
 export const PROVIDER_LIST: ProviderDef[] = [
-  lovableProvider,
   openaiProvider,
   anthropicProvider,
   googleProvider,
@@ -29,7 +26,7 @@ export const PROVIDER_LIST: ProviderDef[] = [
 ];
 
 // Providers that don't need a user-supplied API key (handled server-side or local).
-export const KEYLESS_PROVIDERS: ProviderId[] = ['lovable', 'ollama'];
+export const KEYLESS_PROVIDERS: ProviderId[] = ['ollama'];
 
 export function providerNeedsKey(id: ProviderId): boolean {
   return !KEYLESS_PROVIDERS.includes(id);

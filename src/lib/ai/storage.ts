@@ -61,7 +61,6 @@ export function clearSettings(): void {
 
 export function hasPrimaryProvider(s: AISettings = loadSettings()): boolean {
   if (!s.primary?.provider || !s.primary.model) return false;
-  if (s.primary.provider === 'lovable') return true;
   return !!s.primary.apiKey;
 }
 

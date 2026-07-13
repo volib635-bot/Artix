@@ -1,5 +1,5 @@
 // Shared Server-Sent Events line parser for OpenAI-compatible streams
-// (OpenAI, Groq, Lovable gateway) and delta extractors for others.
+// (OpenAI, Groq, etc.) and delta extractors for others.
 
 export async function* readSSELines(res: Response): AsyncGenerator<string> {
   if (!res.body) return;
