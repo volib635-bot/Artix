@@ -68,7 +68,10 @@ export function estimateCost(
   inputTokens: number,
   outputTokens: number,
 ): { amount: number; unit: 'usd' | 'credits' } {
-  const table = PRICING[provider] ?? {};
+  if (!PRICING[provider]) {
+    throw new Error(`Unsupported AI provider: ${provider}`);
+  }
+  const table = PRICING[provider];
   const row = table[model] ?? table.default ?? { in: 0, out: 0 };
   const unit = row.unit ?? 'usd';
   const amount = (inputTokens * row.in + outputTokens * row.out) / 1_000_000;

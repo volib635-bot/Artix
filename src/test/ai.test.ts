@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { PROVIDERS, PROVIDER_LIST, KEYLESS_PROVIDERS, providerNeedsKey } from "../lib/ai/registry";
 import { isEncrypted, loadSettings } from "../lib/ai/storage";
 import { estimateCost } from "../lib/ai/tokens";
@@ -43,32 +43,24 @@ describe("AI Registry & Storage (Artix Migration)", () => {
     expect(() => estimateCost("lovable" as any, "default", 1000, 1000)).toThrow();
   });
 
-  it("should use 'artix' instead of 'fenix' in storage keys", () => {
-    // LocalStorage keys must reflect the new Artix app branding
-    // We check that the keys in storage.ts implementation have changed.
-    // Since we don't export KEY/ENC_KEY directly, we verify this indirectly by asserting local storage accesses
-    const storageSpy = {
-      getItem: localStorage.getItem,
-      setItem: localStorage.setItem,
-    };
+  it("should use 'artix' instead of 'fenix' in storage keys and migrate legacy settings", () => {
+    localStorage.clear();
+
+    // 1. Assert that saving/loading settings writes to the new 'artix.ai.settings.v1' key
+    const testSettings = { primary: { provider: "openai" as any, model: "gpt-4o", apiKey: "test-key" } };
+    localStorage.setItem("artix.ai.settings.v1", JSON.stringify(testSettings));
+
+    const loaded = loadSettings();
+    expect(loaded).toEqual(testSettings);
+
+    // 2. Assert migration from legacy 'fenix.ai.settings.v1' key
+    localStorage.clear();
+    localStorage.setItem("fenix.ai.settings.v1", JSON.stringify(testSettings));
     
-    let accessedKeys: string[] = [];
-    localStorage.getItem = (key: string) => {
-      accessedKeys.push(key);
-      return null;
-    };
-
-    try {
-      isEncrypted();
-      loadSettings();
-    } finally {
-      localStorage.getItem = storageSpy.getItem;
-    }
-
-    expect(accessedKeys).toContain("artix.ai.settings.v1");
-    expect(accessedKeys).toContain("artix.ai.settings.enc.v1");
-    expect(accessedKeys).not.toContain("fenix.ai.settings.v1");
-    expect(accessedKeys).not.toContain("fenix.ai.settings.enc.v1");
+    const loadedMigrated = loadSettings();
+    expect(loadedMigrated).toEqual(testSettings);
+    expect(localStorage.getItem("artix.ai.settings.v1")).toBe(JSON.stringify(testSettings));
+    expect(localStorage.getItem("fenix.ai.settings.v1")).toBeNull();
   });
 
   it("should have updated or removed Lovable from VibeTargets", () => {
