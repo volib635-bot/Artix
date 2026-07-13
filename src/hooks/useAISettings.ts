@@ -25,10 +25,10 @@ export function useAISettings() {
       setEncrypted(isEncrypted());
       setUnlocked(!isEncrypted() || isUnlocked());
     };
-    window.addEventListener('fenix-ai-settings-changed', handler);
+    window.addEventListener('artix-ai-settings-changed', handler);
     window.addEventListener('storage', handler);
     return () => {
-      window.removeEventListener('fenix-ai-settings-changed', handler);
+      window.removeEventListener('artix-ai-settings-changed', handler);
       window.removeEventListener('storage', handler);
     };
   }, []);

@@ -8,7 +8,7 @@ import { Mail, Lock, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'luci
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
-import fenixLogo from '@/assets/fenix-logo.png';
+import artixLogo from '@/assets/artix-logo.png';
 
 const authSchema = z.object({
   email: z.string()
@@ -165,8 +165,8 @@ const Auth = () => {
           className="w-full max-w-md"
         >
           <div className="flex items-center gap-2 mb-8">
-            <img src={fenixLogo} alt="Fenix" className="w-10 h-10 rounded-lg" />
-            <span className="font-bold text-xl text-foreground">Fenix</span>
+            <img src={artixLogo} alt="Artix" className="w-10 h-10 rounded-lg" />
+            <span className="font-bold text-xl text-foreground">Artix</span>
           </div>
 
           <h1 className="text-2xl font-bold text-foreground mb-2">
@@ -276,7 +276,7 @@ const Auth = () => {
           className="relative z-10 text-center p-8"
         >
           <div className="w-24 h-24 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center mx-auto mb-6 animate-float">
-            <img src={fenixLogo} alt="Fenix" className="h-14 w-14" />
+            <img src={artixLogo} alt="Artix" className="h-14 w-14" />
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-3">
             Document. Design. Visualize.

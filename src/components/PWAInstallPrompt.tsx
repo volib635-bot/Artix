@@ -56,7 +56,7 @@ export function PWAInstallPrompt() {
             <Download className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-foreground">Install Fenix</h4>
+            <h4 className="text-sm font-semibold text-foreground">Install Artix</h4>
             <p className="text-xs text-muted-foreground mt-1">
               Install for offline access and a native app experience.
             </p>

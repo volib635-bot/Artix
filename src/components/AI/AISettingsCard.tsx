@@ -51,13 +51,13 @@ type TestStatus = 'idle' | 'loading' | 'success' | 'error';
 function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
   const { settings, update } = useAISettings();
   const current = settings[slot];
-  const [provider, setProvider] = useState<ProviderId>(current?.provider ?? 'lovable');
+  const [provider, setProvider] = useState<ProviderId>(current?.provider ?? 'openai');
   const [model, setModel] = useState<string>(
-    current?.model ?? PROVIDERS[current?.provider ?? 'lovable'].defaultModel
+    current?.model ?? PROVIDERS[current?.provider ?? 'openai'].defaultModel
   );
   const [apiKey, setApiKey] = useState<string>(current?.apiKey ?? '');
   const [baseUrl, setBaseUrl] = useState<string>(
-    current?.baseUrl ?? PROVIDERS[current?.provider ?? 'lovable'].defaultBaseUrl ?? ''
+    current?.baseUrl ?? PROVIDERS[current?.provider ?? 'openai'].defaultBaseUrl ?? ''
   );
   const [showKey, setShowKey] = useState(false);
   const [testStatus, setTestStatus] = useState<TestStatus>('idle');
@@ -209,10 +209,6 @@ function ProviderSlot({ slot, label }: { slot: SlotKey; label: string }) {
               </button>
             </div>
           </div>
-        </div>
-      ) : provider === 'lovable' ? (
-        <div className="text-xs text-muted-foreground rounded-md border border-border bg-muted/30 p-3">
-          No key needed — uses Lovable AI Gateway server-side. Free trial credits apply; falls back to paid usage afterwards.
         </div>
       ) : (
         <div className="text-xs text-muted-foreground rounded-md border border-border bg-muted/30 p-3">
@@ -476,7 +472,7 @@ export function AISettingsCard() {
         </CardTitle>
         <CardDescription>
           Bring your own key — keys are stored only in your browser and sent directly to the provider.
-          Fenix never sees them.
+          Artix never sees them.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

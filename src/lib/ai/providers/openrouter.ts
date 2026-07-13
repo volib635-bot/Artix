@@ -29,8 +29,8 @@ export const openrouterProvider: ProviderDef = {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${cfg.apiKey}`,
-        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://fenix.app',
-        'X-Title': 'Fenix',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://artix.ai',
+        'X-Title': 'Artix',
       },
       body: JSON.stringify({
         model: cfg.model,
@@ -63,8 +63,8 @@ export const openrouterProvider: ProviderDef = {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${cfg.apiKey}`,
-        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://fenix.app',
-        'X-Title': 'Fenix',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://artix.ai',
+        'X-Title': 'Artix',
       },
       body: JSON.stringify({
         model: cfg.model,

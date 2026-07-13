@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { LogIn, User, LogOut, Menu, X } from 'lucide-react';
-import fenixLogo from '@/assets/fenix-logo.png';
+import artixLogo from '@/assets/artix-logo.png';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -26,9 +26,9 @@ export function Navbar({ isLoggedIn = false, onLogout }: NavbarProps) {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-              <img src={fenixLogo} alt="Fenix" className="w-8 h-8" />
+              <img src={artixLogo} alt="Artix" className="w-8 h-8" />
             </div>
-            <span className="font-semibold text-foreground text-lg">Fenix</span>
+            <span className="font-semibold text-foreground text-lg">Artix</span>
           </Link>
 
           {/* Desktop Navigation */}

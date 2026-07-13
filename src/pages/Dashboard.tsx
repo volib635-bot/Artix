@@ -16,7 +16,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import fenixLogo from '@/assets/fenix-logo.png';
+import artixLogo from '@/assets/artix-logo.png';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -109,8 +109,8 @@ const Dashboard = () => {
         {/* Mobile top bar */}
         <header className="md:hidden sticky top-0 z-30 h-14 flex items-center justify-between px-4 border-b border-border/50 bg-background/80 backdrop-blur-xl">
           <div className="flex items-center gap-2">
-            <img src={fenixLogo} alt="Fenix" className="w-7 h-7" />
-            <span className="font-semibold">Fenix</span>
+            <img src={artixLogo} alt="Artix" className="w-7 h-7" />
+            <span className="font-semibold">Artix</span>
           </div>
           <Sheet>
             <SheetTrigger asChild>
@@ -121,8 +121,8 @@ const Dashboard = () => {
             <SheetContent side="left" className="p-0 w-64">
               <div className="flex flex-col h-full">
                 <div className="h-16 flex items-center gap-2 px-5 border-b border-border/50">
-                  <img src={fenixLogo} alt="Fenix" className="w-8 h-8" />
-                  <span className="font-semibold text-lg">Fenix</span>
+                  <img src={artixLogo} alt="Artix" className="w-8 h-8" />
+                  <span className="font-semibold text-lg">Artix</span>
                 </div>
                 <nav className="flex-1 p-3 space-y-1">
                   {(['dashboard', 'projects', 'recents'] as DashboardView[]).map((v) => (

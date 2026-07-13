@@ -1,7 +1,7 @@
-export type VibeTarget = 'lovable' | 'cursor' | 'bolt' | 'v0' | 'generic';
+export type VibeTarget = 'artix' | 'cursor' | 'bolt' | 'v0' | 'generic';
 
 export const VIBE_TARGETS: { id: VibeTarget; label: string; description: string }[] = [
-  { id: 'lovable', label: 'Lovable', description: 'React + Vite + Tailwind + shadcn, Supabase backend' },
+  { id: 'artix', label: 'Artix', description: 'React + Vite + Tailwind + shadcn, Supabase backend' },
   { id: 'cursor', label: 'Cursor', description: 'IDE agent prompts with file-level instructions' },
   { id: 'bolt', label: 'Bolt.new', description: 'Full-stack scaffolding prompt' },
   { id: 'v0', label: 'v0 by Vercel', description: 'UI-first component generation' },
@@ -17,7 +17,7 @@ export const VIBE_SCOPES: { id: VibeScope; label: string; description: string }[
 ];
 
 const TARGET_GUIDANCE: Record<VibeTarget, string> = {
-  lovable: `Target stack: React 18 + Vite + TypeScript + Tailwind + shadcn/ui + React Router + TanStack Query. Backend: Lovable Cloud (Supabase) with RLS. Reference shadcn components by name. Reference semantic Tailwind tokens (no hardcoded hex). Mention required tables/policies explicitly.`,
+  artix: `Target stack: React 18 + Vite + TypeScript + Tailwind + shadcn/ui + React Router + TanStack Query. Backend: Supabase with RLS. Reference shadcn components by name. Reference semantic Tailwind tokens (no hardcoded hex). Mention required tables/policies explicitly.`,
   cursor: `Target: Cursor IDE agent. Structure the prompt as: (1) Goal, (2) Files to create/modify with relative paths, (3) Step-by-step edits per file, (4) Verification commands. Be explicit about imports.`,
   bolt: `Target: Bolt.new full-stack scaffolder. Produce a single comprehensive prompt that includes stack choice, file tree, env vars, and a prioritized build order.`,
   v0: `Target: v0 by Vercel. Focus on UI components: layout, props, variants, states, responsive behavior, and accessibility. Avoid backend specifics.`,

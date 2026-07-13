@@ -13,7 +13,7 @@ import {
   FileCode,
   ChevronRight
 } from 'lucide-react';
-import fenixLogo from '@/assets/fenix-logo.png';
+import artixLogo from '@/assets/artix-logo.png';
 
 const features = [
   {
@@ -104,7 +104,7 @@ const Index = () => {
             </h1>
 
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Document, design, and visualize — all in one workspace. Write in Markdown, architect your systems, and map out algorithms with <span className="text-primary font-semibold">Fenix</span>.
+              Document, design, and visualize — all in one workspace. Write in Markdown, architect your systems, and map out algorithms with <span className="text-primary font-semibold">Artix</span>.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -176,7 +176,7 @@ const Index = () => {
               <div className="p-6 font-mono text-sm leading-relaxed">
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">1</span>
-                  <span className="text-blue-400"># Welcome to Fenix</span>
+                  <span className="text-blue-400"># Welcome to Artix</span>
                 </div>
                 <div className="flex">
                   <span className="text-muted-foreground/50 w-8 text-right mr-4">2</span>
@@ -277,7 +277,7 @@ const Index = () => {
                 Ready to Build?
               </h2>
               <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-                Start building with Fenix — it's free. No setup, no credit card, just your ideas.
+                Start building with Artix — it's free. No setup, no credit card, just your ideas.
               </p>
               <Button 
                 size="lg" 
@@ -295,11 +295,11 @@ const Index = () => {
       <footer className="border-t border-border py-8 px-4">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src={fenixLogo} alt="Fenix" className="w-6 h-6" />
-            <span className="font-semibold text-foreground">Fenix</span>
+            <img src={artixLogo} alt="Artix" className="w-6 h-6" />
+            <span className="font-semibold text-foreground">Artix</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Fenix. Built for developers.
+            © {new Date().getFullYear()} Artix. Built for developers.
           </p>
         </div>
       </footer>

@@ -47,7 +47,7 @@ export function VibeCodingDialog({
   sourceDocumentId,
   projectId,
 }: VibeCodingDialogProps) {
-  const [target, setTarget] = useState<VibeTarget>('lovable');
+  const [target, setTarget] = useState<VibeTarget>('artix');
   const [scope, setScope] = useState<VibeScope>('feature');
   const [customInstructions, setCustomInstructions] = useState('');
   const [output, setOutput] = useState('');

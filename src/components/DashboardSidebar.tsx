@@ -14,7 +14,7 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
-import fenixLogo from '@/assets/fenix-logo.png';
+import artixLogo from '@/assets/artix-logo.png';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -102,10 +102,10 @@ export function DashboardSidebar({
             collapsed ? 'justify-center px-2' : 'px-5'
           )}
         >
-          <img src={fenixLogo} alt="Fenix" className="w-8 h-8 shrink-0" />
+          <img src={artixLogo} alt="Artix" className="w-8 h-8 shrink-0" />
           {!collapsed && (
             <>
-              <span className="font-semibold text-foreground text-lg flex-1">Fenix</span>
+              <span className="font-semibold text-foreground text-lg flex-1">Artix</span>
               <Button
                 variant="ghost"
                 size="icon"

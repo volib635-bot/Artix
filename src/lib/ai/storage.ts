@@ -1,8 +1,8 @@
 import { AISettings } from './types';
 import { decryptJSON, encryptJSON, EncryptedBlob } from './crypto';
 
-const KEY = 'fenix.ai.settings.v1';
-const ENC_KEY = 'fenix.ai.settings.enc.v1';
+const KEY = 'artix.ai.settings.v1';
+const ENC_KEY = 'artix.ai.settings.enc.v1';
 
 // In-memory cache for encrypted mode.
 let memoryCache: AISettings | null = null;
@@ -24,7 +24,21 @@ export function loadSettings(): AISettings {
   }
   try {
     const raw = localStorage.getItem(KEY);
-    if (!raw) return {};
+    if (!raw) {
+      // Migrate legacy fenix settings if present
+      const legacyRaw = localStorage.getItem('fenix.ai.settings.v1');
+      if (legacyRaw) {
+        localStorage.setItem(KEY, legacyRaw);
+        localStorage.removeItem('fenix.ai.settings.v1');
+        const legacyEnc = localStorage.getItem('fenix.ai.settings.enc.v1');
+        if (legacyEnc) {
+          localStorage.setItem(ENC_KEY, legacyEnc);
+          localStorage.removeItem('fenix.ai.settings.enc.v1');
+        }
+        return JSON.parse(legacyRaw) as AISettings;
+      }
+      return {};
+    }
     return JSON.parse(raw) as AISettings;
   } catch {
     return {};
@@ -32,7 +46,7 @@ export function loadSettings(): AISettings {
 }
 
 function notifyChange() {
-  window.dispatchEvent(new CustomEvent('fenix-ai-settings-changed'));
+  window.dispatchEvent(new CustomEvent('artix-ai-settings-changed'));
 }
 
 export function saveSettings(settings: AISettings): void {

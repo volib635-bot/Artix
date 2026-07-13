@@ -70,9 +70,9 @@ export function ExecutiveDashboard({
     },
   ];
 
-  const primary: ProviderId = settings.primary?.provider ?? 'lovable';
+  const primary: ProviderId = settings.primary?.provider ?? 'openai';
   const model =
-    settings.primary?.model ?? (primary === 'lovable' ? 'google/gemini-2.5-flash' : 'default');
+    settings.primary?.model ?? (primary === 'openai' ? 'gpt-4o-mini' : 'default');
   const sampleIn = 8000;
   const sampleOut = 2000;
   const perRequest = estimateCost(primary, model, sampleIn, sampleOut);
