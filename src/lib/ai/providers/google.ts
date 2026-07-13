@@ -4,11 +4,14 @@ import { readSSELines } from '../streaming';
 export const googleProvider: ProviderDef = {
   id: 'google',
   label: 'Google Gemini',
-  defaultModel: 'gemini-1.5-flash',
+  defaultModel: 'gemini-3.5-flash',
   models: [
+    { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
+    { id: 'gemini-3.1-pro', label: 'Gemini 3.1 Pro' },
+    { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite' },
+    { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
     { id: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
     { id: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
-    { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
   ],
   async chat(req, cfg) {
     const contents = req.messages.map((m) => ({

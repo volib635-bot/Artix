@@ -16,8 +16,16 @@ describe('UX & Utility Tests', () => {
     expect(cost.unit).toBe('usd');
 
     // Google Flash rates: $0.075 / 1M in, $0.3 / 1M out
-    const costGoogle = estimateCost('google', 'gemini-1.5-flash', 100000, 100000);
-    expect(costGoogle.amount).toBeCloseTo(0.0375); // (100000*0.075 + 100000*0.3)/1000000 = (7500 + 30000)/1000000 = 0.0375
+    const costGoogle = estimateCost('google', 'gemini-3.5-flash', 100000, 100000);
+    expect(costGoogle.amount).toBeCloseTo(0.0375); // (100000*0.075 + 100000*0.3)/1000000 = 0.0375
+
+    // Anthropic Sonnet 5 rates: $3.0 / 1M in, $15.0 / 1M out
+    const costClaude = estimateCost('anthropic', 'claude-sonnet-5', 100000, 50000);
+    expect(costClaude.amount).toBeCloseTo(1.05); // (100000*3 + 50000*15)/1000000 = (300000 + 750000)/1000000 = 1.05
+
+    // OpenAI GPT-5.6 Sol rates: $1.5 / 1M in, $6.0 / 1M out
+    const costGPT5 = estimateCost('openai', 'gpt-5.6-sol', 100000, 50000);
+    expect(costGPT5.amount).toBeCloseTo(0.45); // (100000*1.5 + 50000*6)/1000000 = (150000 + 300000)/1000000 = 0.45
   });
 
   it('should format cost values correctly for display', () => {

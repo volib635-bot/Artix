@@ -6,6 +6,10 @@ export const anthropicProvider: ProviderDef = {
   label: 'Anthropic',
   defaultModel: 'claude-3-5-haiku-latest',
   models: [
+    { id: 'claude-sonnet-5', label: 'Claude Sonnet 5' },
+    { id: 'claude-fable-5', label: 'Claude Fable 5' },
+    { id: 'claude-opus-4-8', label: 'Claude Opus 4.8' },
+    { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' },
     { id: 'claude-3-5-sonnet-latest', label: 'Claude 3.5 Sonnet' },
     { id: 'claude-3-5-haiku-latest', label: 'Claude 3.5 Haiku' },
     { id: 'claude-3-opus-latest', label: 'Claude 3 Opus' },

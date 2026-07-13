@@ -6,10 +6,15 @@ export const openaiProvider: ProviderDef = {
   label: 'OpenAI',
   defaultModel: 'gpt-4o-mini',
   models: [
+    { id: 'gpt-5.6-sol', label: 'GPT-5.6 Sol (Flagship)' },
+    { id: 'gpt-5.6-terra', label: 'GPT-5.6 Terra' },
+    { id: 'gpt-5.6-luna', label: 'GPT-5.6 Luna' },
+    { id: 'gpt-5.4-mini', label: 'GPT-5.4 Mini' },
     { id: 'gpt-4o', label: 'GPT-4o' },
     { id: 'gpt-4o-mini', label: 'GPT-4o mini' },
     { id: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
     { id: 'o3-mini', label: 'o3-mini' },
+    { id: 'o4-mini', label: 'o4-mini' },
   ],
   async chat(req, cfg) {
     const messages = [

@@ -8,6 +8,8 @@ export const groqProvider: ProviderDef = {
   models: [
     { id: 'llama-3.3-70b-versatile', label: 'Llama 3.3 70B' },
     { id: 'llama-3.1-8b-instant', label: 'Llama 3.1 8B Instant' },
+    { id: 'deepseek-r1-distill-llama-70b', label: 'DeepSeek R1 Distill Llama 70B' },
+    { id: 'qwen-2.5-coder-32b', label: 'Qwen 2.5 Coder 32B' },
     { id: 'mixtral-8x7b-32768', label: 'Mixtral 8x7B' },
   ],
   async chat(req, cfg) {
