@@ -1,0 +1,77 @@
+import { describe, it, expect } from "vitest";
+import { readFileSync, existsSync, readdirSync } from "fs";
+import { join, resolve } from "path";
+
+// A utility to recursively read file paths in a directory
+function getFiles(dir: string): string[] {
+  const dirents = readdirSync(dir, { withFileTypes: true });
+  const files = dirents.map((dirent) => {
+    const res = resolve(dir, dirent.name);
+    return dirent.isDirectory() ? getFiles(res) : res;
+  });
+  return Array.prototype.concat(...files);
+}
+
+describe("App Branding (Artix Migration)", () => {
+  const srcDir = join(__dirname, "../");
+
+  it("should have renamed the fenix-logo asset to artix-logo", () => {
+    const assetsDir = join(srcDir, "assets");
+    const artixLogoExists = existsSync(join(assetsDir, "artix-logo.png"));
+    const fenixLogoExists = existsSync(join(assetsDir, "fenix-logo.png"));
+
+    expect(artixLogoExists).toBe(true);
+    expect(fenixLogoExists).toBe(false);
+  });
+
+  it("should not contain imports or references to fenix-logo in src components", () => {
+    const allFiles = getFiles(srcDir).filter(
+      (f) =>
+        (f.endsWith(".ts") || f.endsWith(".tsx")) &&
+        !f.includes("branding.test.ts") &&
+        !f.includes("ai.test.ts")
+    );
+
+    for (const filePath of allFiles) {
+      const content = readFileSync(filePath, "utf-8");
+      
+      // Should not import the old logo file
+      expect(content).not.toContain("fenix-logo.png");
+      expect(content).not.toContain("fenixLogo");
+    }
+  });
+
+  it("should not contain the string 'Fenix' in key user-facing source files", () => {
+    const targetFiles = [
+      join(srcDir, "components/AI/AISettingsCard.tsx"),
+      join(srcDir, "components/DashboardSidebar.tsx"),
+      join(srcDir, "components/Navbar.tsx"),
+      join(srcDir, "components/PWAInstallPrompt.tsx"),
+      join(srcDir, "lib/ai/providers/openrouter.ts"),
+      join(srcDir, "pages/Auth.tsx"),
+      join(srcDir, "pages/Dashboard.tsx"),
+      join(srcDir, "pages/Index.tsx"),
+    ];
+
+    for (const filePath of targetFiles) {
+      if (existsSync(filePath)) {
+        const content = readFileSync(filePath, "utf-8");
+        // Ensure the word Fenix is replaced by Artix
+        expect(content).not.toContain("Fenix");
+      }
+    }
+  });
+
+  it("should have updated index.html metadata", () => {
+    const indexHtmlPath = join(srcDir, "../index.html");
+    if (existsSync(indexHtmlPath)) {
+      const content = readFileSync(indexHtmlPath, "utf-8");
+      
+      // Brand title and description checks
+      expect(content).toContain("<title>Artix - The Developer&#39;s Command Center</title>");
+      expect(content).not.toContain("Fenix - The Developer");
+      expect(content).not.toContain("lovable.app-1775311392549.png");
+      expect(content).not.toContain("lovableproject.com");
+    }
+  });
+});
