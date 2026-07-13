@@ -11,23 +11,19 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'dark';
-    const stored = localStorage.getItem('fenix-theme') as Theme | null;
-    return stored ?? 'dark';
-  });
-
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    localStorage.setItem('fenix-theme', theme);
-  }, [theme]);
+    if (typeof window !== 'undefined') {
+      const root = document.documentElement;
+      root.classList.remove('light');
+      root.classList.add('dark');
+      localStorage.setItem('artix-theme', 'dark');
+    }
+  }, []);
 
   const value: ThemeContextValue = {
-    theme,
-    setTheme: setThemeState,
-    toggleTheme: () => setThemeState((t) => (t === 'dark' ? 'light' : 'dark')),
+    theme: 'dark',
+    setTheme: () => {},
+    toggleTheme: () => {},
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

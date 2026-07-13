@@ -11,8 +11,6 @@ import {
   Code2,
   ChevronsLeft,
   ChevronsRight,
-  Sun,
-  Moon,
 } from 'lucide-react';
 import artixLogo from '@/assets/artix-logo.png';
 import { cn } from '@/lib/utils';
@@ -191,31 +189,7 @@ export function DashboardSidebar({
             collapsed ? 'px-2' : 'px-3'
           )}
         >
-          {/* Theme toggle */}
-          {collapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={toggleTheme}
-                  className="w-full flex justify-center py-2.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                  aria-label="Toggle theme"
-                >
-                  {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <button
-              onClick={toggleTheme}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-full text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all"
-            >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
-            </button>
-          )}
+
 
           <NavBtn
             label="Settings"

@@ -90,4 +90,23 @@ describe("App Branding (Artix Migration)", () => {
       expect(content).toContain("color-scheme: dark;");
     }
   });
+
+  it("should have removed light mode styles and logic from useTheme and index.css", () => {
+    const indexCssPath = join(srcDir, "index.css");
+    const useThemePath = join(srcDir, "hooks/useTheme.tsx");
+
+    if (existsSync(indexCssPath)) {
+      const content = readFileSync(indexCssPath, "utf-8");
+      // Check that .light class selector styling is completely removed
+      expect(content).not.toContain(".light {");
+      expect(content).not.toContain("--background: 210 20% 98%;");
+    }
+
+    if (existsSync(useThemePath)) {
+      const content = readFileSync(useThemePath, "utf-8");
+      // Check that theme state is no longer toggleable to light mode
+      expect(content).toContain("theme: 'dark'");
+      expect(content).not.toContain("? 'light' : 'dark'");
+    }
+  });
 });
