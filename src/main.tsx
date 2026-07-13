@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import App from "./App.tsx";
 import "./index.css";
 
-// PWA service worker guard: prevent SW registration in iframes / Lovable preview
+// PWA service worker guard: prevent SW registration in iframes / preview
 const isInIframe = (() => {
   try {
     return window.self !== window.top;
@@ -16,9 +16,7 @@ const isInIframe = (() => {
   }
 })();
 
-const isPreviewHost =
-  window.location.hostname.includes("id-preview--") ||
-  window.location.hostname.includes("lovableproject.com");
+const isPreviewHost = window.location.hostname.includes("id-preview--");
 
 if (isPreviewHost || isInIframe) {
   navigator.serviceWorker?.getRegistrations().then((registrations) => {

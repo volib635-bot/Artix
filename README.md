@@ -1,73 +1,53 @@
-# Welcome to your Lovable project
+# Artix - The Developer's Command Center
 
-## Project info
+Artix is a unified workspace for developers to write documentation, design systems, and visualize algorithms.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Features
 
-## How can I edit this code?
+- **Document Forge**: Write in Markdown, XML, or plain text with Monaco editor, live preview, auto-save, and export to PDF/HTML.
+- **System Architect**: Design system architectures visually with drag-and-drop nodes, curved connections, and freehand drawing.
+- **Algorithm Visualizer**: Map out sorting, graph traversal, and data structure algorithms with specialized node templates.
+- **AI Workspace**: Generate PRDs (Product Requirements Documents), multi-agent workflow blueprints, and vibe coding prompts using self-owned AI APIs.
+- **Offline First**: PWA support allows installing Artix as a native desktop or mobile application with offline workspace access.
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
+- **Flow Engine**: @xyflow/react (React Flow), Dagre
+- **Backend**: Supabase (Database with Row-Level Security, Authentication)
+- **Local Dev Server**: Node.js & npm
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Development Setup
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Follow these steps to run Artix locally:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Step 1: Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Step 2: Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Step 3: Configure Environment Variables
+# Copy .env.example or create .env with your Supabase credentials:
+VITE_SUPABASE_PROJECT_ID="your-project-id"
+VITE_SUPABASE_URL="https://your-project-id.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="your-publishable-anon-key"
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## AI Configuration
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Artix is built on a "bring-your-own-key" architecture. Stored API keys are encrypted client-side using `AES-256-GCM` with a passphrase PBKDF2 derivative. Configure your API keys directly in **Settings → AI Configuration** for:
+- OpenAI (GPT-4o, GPT-4o-mini, etc.)
+- Anthropic (Claude 3.5 Sonnet, Haiku, Opus)
+- Google Gemini (Gemini 1.5 Pro, Flash, etc.)
+- Groq (Llama 3.3, 3.1)
+- OpenRouter
+- Ollama (Local LLM server)
 
-**Use GitHub Codespaces**
+## License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+MIT - Built for developers.
