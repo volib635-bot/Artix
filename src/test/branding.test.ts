@@ -74,4 +74,20 @@ describe("App Branding (Artix Migration)", () => {
       expect(content).not.toContain("lovableproject.com");
     }
   });
+
+  it("should have applied dark-canvas style wrapper to SystemArchitect to guarantee a dark theme canvas", () => {
+    const sysArchitectPath = join(srcDir, "components/SystemArchitect/SystemArchitect.tsx");
+    const indexCssPath = join(srcDir, "index.css");
+
+    if (existsSync(sysArchitectPath)) {
+      const content = readFileSync(sysArchitectPath, "utf-8");
+      expect(content).toContain('className="dark-canvas h-screen w-full bg-background');
+    }
+
+    if (existsSync(indexCssPath)) {
+      const content = readFileSync(indexCssPath, "utf-8");
+      expect(content).toContain(".dark-canvas");
+      expect(content).toContain("color-scheme: dark;");
+    }
+  });
 });

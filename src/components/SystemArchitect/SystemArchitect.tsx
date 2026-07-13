@@ -362,7 +362,7 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
   };
 
   return (
-    <div className="h-screen w-full bg-background flex flex-col">
+    <div className="dark-canvas h-screen w-full bg-background flex flex-col">
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur flex items-center h-14 px-4 gap-4 shrink-0">
         <Button variant="ghost" size="icon" onClick={onBack}>
