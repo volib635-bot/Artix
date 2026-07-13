@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, FileText, GitBranch, Plus, Loader2, MoreVertical, Trash2, Pencil } from 'lucide-react';
@@ -186,6 +186,17 @@ const ProjectWorkspace = () => {
     await updateDesign({ id: renameDesign.id, name: newName });
     toast.success('Design renamed');
   };
+
+  const handleSaveDesign = useCallback(async (boardState: any) => {
+    if (!currentDesign?.id) return;
+    await updateDesign({ id: currentDesign.id, board_state: boardState });
+  }, [currentDesign?.id, updateDesign]);
+
+  const handleUpdateDesignName = useCallback(async (name: string) => {
+    if (!currentDesign?.id) return;
+    await updateDesign({ id: currentDesign.id, name });
+  }, [currentDesign?.id, updateDesign]);
+
   if (projectsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -211,8 +222,8 @@ const ProjectWorkspace = () => {
     return (
       <SystemArchitect
         design={currentDesign}
-        onSave={(boardState) => updateDesign({ id: currentDesign.id, board_state: boardState })}
-        onUpdateName={(name) => updateDesign({ id: currentDesign.id, name })}
+        onSave={handleSaveDesign}
+        onUpdateName={handleUpdateDesignName}
         onBack={() => setSelectedDesign(null)}
         documents={documents.map((d) => ({ id: d.id, title: d.title, content: d.content || '' }))}
       />

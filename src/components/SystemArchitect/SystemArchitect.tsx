@@ -147,6 +147,12 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
   const nodeIdCounter = useRef(nodes.length);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Store onSave callback in ref to prevent infinite loops when reference changes
+  const onSaveRef = useRef(onSave);
+  useEffect(() => {
+    onSaveRef.current = onSave;
+  }, [onSave]);
+
   // Auto-save with debounce
   const triggerAutoSave = useCallback(() => {
     setSaveStatus('saving');
@@ -173,7 +179,7 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
           })),
           strokes,
         };
-        await onSave(boardState);
+        await onSaveRef.current(boardState);
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (err) {
@@ -181,7 +187,7 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
         setSaveStatus('error');
       }
     }, 1000);
-  }, [nodes, edges, strokes, onSave]);
+  }, [nodes, edges, strokes]);
 
   useEffect(() => {
     triggerAutoSave();
