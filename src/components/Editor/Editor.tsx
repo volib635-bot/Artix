@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import MonacoEditor from '@monaco-editor/react';
 import { EditorToolbar } from './EditorToolbar';
 import { MarkdownPreview } from './MarkdownPreview';
@@ -30,12 +31,22 @@ interface EditorProps {
 }
 
 export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [title, setTitle] = useState(document.title);
   const [content, setContent] = useState(document.content);
   const [format, setFormat] = useState<DocumentFormat>(document.format);
   const [prdOpen, setPrdOpen] = useState(false);
   const [vibeOpen, setVibeOpen] = useState(false);
   const [agentOpen, setAgentOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('vibe') === 'true') {
+      setVibeOpen(true);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('vibe');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
 
   const handleSave = useCallback(

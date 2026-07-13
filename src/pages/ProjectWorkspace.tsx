@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, FileText, GitBranch, Plus, Loader2, MoreVertical, Trash2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ import {
 const ProjectWorkspace = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const { projects, isLoading: projectsLoading } = useProjects();
   const {
@@ -64,6 +65,37 @@ const ProjectWorkspace = () => {
     }
   }, [project, projectsLoading, user, navigate]);
 
+  // Handle action parameter on workspace mount
+  useEffect(() => {
+    if (projectsLoading || docsLoading || designsLoading || !id) return;
+
+    const action = searchParams.get('action');
+    if (!action) return;
+
+    // Clear search param to prevent repeating action on refresh
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('action');
+    setSearchParams(newParams, { replace: true });
+
+    if (action === 'new-document') {
+      setActiveTab('documents');
+      handleCreateDocument();
+    } else if (action === 'new-design') {
+      setActiveTab('architect');
+      handleCreateDesign();
+    } else if (action === 'new-vibe') {
+      setActiveTab('documents');
+      createDocument(id).then((newDoc) => {
+        setSelectedDocument(newDoc);
+        toast.success('Vibe Scratchpad created');
+        // Set query param ?vibe=true to open Vibe coding dialog
+        setSearchParams({ vibe: 'true' }, { replace: true });
+      }).catch(() => {
+        toast.error('Failed to start vibe coding');
+      });
+    }
+  }, [projectsLoading, docsLoading, designsLoading, id, searchParams]);
+
   // Don't render until auth is resolved
   if (authLoading) {
     return (
@@ -79,13 +111,15 @@ const ProjectWorkspace = () => {
   }
 
   const handleCreateDocument = async () => {
-    if (!id) return;
+    if (!id) return null;
     try {
       const newDoc = await createDocument(id);
       setSelectedDocument(newDoc);
       toast.success('New document created');
+      return newDoc;
     } catch (error) {
       toast.error('Failed to create document');
+      return null;
     }
   };
 
@@ -243,7 +277,7 @@ const ProjectWorkspace = () => {
                 </div>
                 <h3 className="text-lg font-medium text-foreground mb-2">No documents yet</h3>
                 <p className="text-muted-foreground text-sm max-w-sm mb-4">
-                  Create your first document to start writing.
+                  Start writing technical specs, PRDs, or documentation. Your work auto-saves as you type.
                 </p>
                 <Button onClick={handleCreateDocument} className="gap-2">
                   <Plus className="h-4 w-4" />
@@ -324,7 +358,7 @@ const ProjectWorkspace = () => {
                 </div>
                 <h3 className="text-lg font-medium text-foreground mb-2">No system designs yet</h3>
                 <p className="text-muted-foreground text-sm max-w-sm mb-4">
-                  Create your first system design to start architecting.
+                  Visually map your system architecture with drag-and-drop nodes, connections, and annotations.
                 </p>
                 <Button onClick={handleCreateDesign} className="gap-2">
                   <Plus className="h-4 w-4" />

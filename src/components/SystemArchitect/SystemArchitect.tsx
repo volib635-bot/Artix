@@ -22,8 +22,9 @@ import {
   LayoutList, ArrowUpDown, Repeat, Split,
   GitBranch, Circle, CheckCircle, ListOrdered, Layers,
   Link, Hash, Triangle, Variable, MousePointer,
-  HelpCircle, Terminal,
+  HelpCircle, Terminal, Check, Loader2, AlertCircle,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArchitectureGeneratorDialog } from '@/components/AI/ArchitectureGeneratorDialog';
 import dagre from '@dagrejs/dagre';
 import { Button } from '@/components/ui/button';
@@ -80,6 +81,7 @@ interface SystemArchitectProps {
 }
 
 export function SystemArchitect({ design, onSave, onUpdateName, onBack, documents = [] }: SystemArchitectProps) {
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const initialNodes: ArchitectFlowNode[] = design.board_state.nodes.map((n) => ({
     id: n.id,
     type: 'architect',
@@ -147,29 +149,37 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
 
   // Auto-save with debounce
   const triggerAutoSave = useCallback(() => {
+    setSaveStatus('saving');
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
     saveTimeoutRef.current = setTimeout(async () => {
-      const boardState: BoardState = {
-        nodes: nodes.map((n) => ({
-          id: n.id,
-          type: n.data.nodeType,
-          position: n.position,
-          data: {
-            label: n.data.label,
-            description: n.data.description,
-          },
-        })),
-        edges: edges.map((e) => ({
-          id: e.id,
-          source: e.source,
-          target: e.target,
-          label: e.label as string | undefined,
-        })),
-        strokes,
-      };
-      await onSave(boardState);
+      try {
+        const boardState: BoardState = {
+          nodes: nodes.map((n) => ({
+            id: n.id,
+            type: n.data.nodeType,
+            position: n.position,
+            data: {
+              label: n.data.label,
+              description: n.data.description,
+            },
+          })),
+          edges: edges.map((e) => ({
+            id: e.id,
+            source: e.source,
+            target: e.target,
+            label: e.label as string | undefined,
+          })),
+          strokes,
+        };
+        await onSave(boardState);
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch (err) {
+        console.error('Canvas auto-save failed:', err);
+        setSaveStatus('error');
+      }
     }, 1000);
   }, [nodes, edges, strokes, onSave]);
 
@@ -330,26 +340,34 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
 
 
   const handleManualSave = async () => {
-    const boardState: BoardState = {
-      nodes: nodes.map((n) => ({
-        id: n.id,
-        type: n.data.nodeType,
-        position: n.position,
-        data: {
-          label: n.data.label,
-          description: n.data.description,
-        },
-      })),
-      edges: edges.map((e) => ({
-        id: e.id,
-        source: e.source,
-        target: e.target,
-        label: e.label as string | undefined,
-      })),
+    setSaveStatus('saving');
+    try {
+      const boardState: BoardState = {
+        nodes: nodes.map((n) => ({
+          id: n.id,
+          type: n.data.nodeType,
+          position: n.position,
+          data: {
+            label: n.data.label,
+            description: n.data.description,
+          },
+        })),
+        edges: edges.map((e) => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          label: e.label as string | undefined,
+        })),
         strokes,
-    };
-    await onSave(boardState);
-    toast.success('Design saved');
+      };
+      await onSave(boardState);
+      setSaveStatus('saved');
+      toast.success('Design saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch {
+      setSaveStatus('error');
+      toast.error('Failed to save design');
+    }
   };
 
   const handleNameSave = async () => {
@@ -471,6 +489,44 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={saveStatus}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+              className={cn(
+                "flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md mr-1",
+                saveStatus === 'saving' && "text-muted-foreground",
+                saveStatus === 'saved' && "text-success",
+                saveStatus === 'error' && "text-destructive",
+                saveStatus === 'idle' && "text-muted-foreground/50"
+              )}
+            >
+              {saveStatus === 'saving' && (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              )}
+              {saveStatus === 'saved' && (
+                <>
+                  <Check className="h-3 w-3" />
+                  <span>Saved</span>
+                </>
+              )}
+              {saveStatus === 'error' && (
+                <>
+                  <AlertCircle className="h-3 w-3" />
+                  <span>Error</span>
+                </>
+              )}
+              {saveStatus === 'idle' && (
+                <span className="text-muted-foreground/40">Auto-save enabled</span>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
           <Button onClick={handleManualSave} className="gap-2">
             <Save className="h-4 w-4" />
             Save

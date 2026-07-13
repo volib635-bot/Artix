@@ -5,12 +5,32 @@ import { Menu, Loader2, LogOut, Settings as SettingsIcon, Clock, FileText, Layer
 import { DashboardSidebar, DashboardView } from '@/components/DashboardSidebar';
 import { ProjectGrid } from '@/components/ProjectGrid';
 import { ExecutiveDashboard } from '@/components/ExecutiveDashboard';
+import { APIUsageView } from '@/components/APIUsageView';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects, Project } from '@/hooks/useProjects';
 import { useRecentActivity } from '@/hooks/useRecentActivity';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Sheet,
   SheetContent,
@@ -34,6 +54,10 @@ const Dashboard = () => {
   const [createNonce, setCreateNonce] = useState(0);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { data: recents = [], isLoading: recentsLoading } = useRecentActivity(20);
+
+  const [deleteProjectTarget, setDeleteProjectTarget] = useState<Project | null>(null);
+  const [renameProjectTarget, setRenameProjectTarget] = useState<Project | null>(null);
+  const [renameName, setRenameName] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -177,12 +201,16 @@ const Dashboard = () => {
                   onGoToProjects={() => setView('projects')}
                   projects={projects}
                   onSelectProject={handleSelectProject}
-                  onDeleteProject={(p) => handleDeleteProject(p.id)}
+                  onDeleteProject={(p) => setDeleteProjectTarget(p)}
                   onRenameProject={(p) => {
-                    const name = window.prompt('Rename project', p.name);
-                    if (name && name.trim()) handleRenameProject(p.id, name.trim());
+                    setRenameProjectTarget(p);
+                    setRenameName(p.name);
                   }}
                 />
+              )}
+
+              {view === 'api-usage' && (
+                <APIUsageView />
               )}
 
               {view === 'projects' && (
@@ -259,6 +287,78 @@ const Dashboard = () => {
           </AnimatePresence>
         )}
       </div>
+
+      {/* Delete Confirmation for Executive Dashboard */}
+      <AlertDialog open={!!deleteProjectTarget} onOpenChange={(open) => !open && setDeleteProjectTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteProjectTarget?.name}"? This will also delete all documents and system designs inside. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteProjectTarget) {
+                  handleDeleteProject(deleteProjectTarget.id);
+                  setDeleteProjectTarget(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Rename Dialog for Executive Dashboard */}
+      <Dialog
+        open={!!renameProjectTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRenameProjectTarget(null);
+            setRenameName('');
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Project</DialogTitle>
+            <DialogDescription>
+              Enter a new name for your project.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={renameName}
+            onChange={(e) => setRenameName(e.target.value)}
+            placeholder="Project name"
+            autoFocus
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setRenameProjectTarget(null);
+              setRenameName('');
+            }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (renameProjectTarget && renameName.trim()) {
+                  handleRenameProject(renameProjectTarget.id, renameName.trim());
+                  setRenameProjectTarget(null);
+                  setRenameName('');
+                }
+              }}
+              disabled={!renameName.trim()}
+            >
+              Rename
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useTheme } from '@/hooks/useTheme';
 
-export type DashboardView = 'dashboard' | 'projects' | 'recents';
+export type DashboardView = 'dashboard' | 'projects' | 'recents' | 'api-usage';
 
 interface DashboardSidebarProps {
   view: DashboardView;
@@ -34,7 +34,7 @@ const primaryNav: { label: string; view: DashboardView; icon: typeof LayoutDashb
   { label: 'Dashboard', view: 'dashboard', icon: LayoutDashboard },
   { label: 'All Projects', view: 'projects', icon: FolderKanban },
   { label: 'Recents', view: 'recents', icon: Clock },
-  { label: 'API Usage', view: 'dashboard', icon: Code2 },
+  { label: 'API Usage', view: 'api-usage', icon: Code2 },
 ];
 
 export function DashboardSidebar({
@@ -65,11 +65,11 @@ export function DashboardSidebar({
       <button
         onClick={onClick}
         className={cn(
-          'w-full flex items-center gap-3 rounded-full text-sm transition-all',
-          collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2',
+          'w-full flex items-center gap-3 rounded-r-full text-sm transition-all duration-200 border-l-2',
+          collapsed ? 'justify-center px-0 py-2.5' : 'pl-3 pr-4 py-2',
           active
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+            ? 'bg-primary/10 text-primary border-primary font-medium'
+            : 'text-muted-foreground hover:text-foreground hover:bg-accent/70 hover:scale-[1.02] border-transparent'
         )}
       >
         <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
