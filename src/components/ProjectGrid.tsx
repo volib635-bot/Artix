@@ -4,7 +4,6 @@ import { FolderPlus, Loader2, Folder } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ProjectCard } from './ProjectCard';
-import { CreateProjectModal } from './CreateProjectModal';
 import { Project } from '@/hooks/useProjects';
 import {
   Dialog,
@@ -28,27 +27,18 @@ import {
 interface ProjectGridProps {
   projects: Project[];
   onSelect: (project: Project) => void;
-  onCreate: (name: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onRename: (id: string, name: string) => Promise<void>;
-  isCreating?: boolean;
-  openCreateNonce?: number;
+  onCreateClick: () => void;
 }
 
 export function ProjectGrid({
   projects,
   onSelect,
-  onCreate,
   onDelete,
   onRename,
-  isCreating,
-  openCreateNonce,
+  onCreateClick,
 }: ProjectGridProps) {
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (openCreateNonce && openCreateNonce > 0) setCreateModalOpen(true);
-  }, [openCreateNonce]);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
@@ -92,7 +82,7 @@ export function ProjectGrid({
             {projects.length} {projects.length === 1 ? 'project' : 'projects'}
           </p>
         </div>
-        <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
+        <Button onClick={onCreateClick} className="gap-2">
           <FolderPlus className="h-4 w-4" />
           Create New Project
         </Button>
@@ -111,7 +101,7 @@ export function ProjectGrid({
           <p className="text-muted-foreground text-sm max-w-md mb-6">
             Create your first project to start organizing your documents and system designs.
           </p>
-          <Button onClick={() => setCreateModalOpen(true)} className="gap-2">
+          <Button onClick={onCreateClick} className="gap-2">
             <FolderPlus className="h-4 w-4" />
             Create Your First Project
           </Button>
@@ -130,14 +120,6 @@ export function ProjectGrid({
           ))}
         </div>
       )}
-
-      <CreateProjectModal
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-        onSubmit={onCreate}
-        isLoading={isCreating}
-      />
-
       {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

@@ -6,6 +6,7 @@ import { DashboardSidebar, DashboardView } from '@/components/DashboardSidebar';
 import { ProjectGrid } from '@/components/ProjectGrid';
 import { ExecutiveDashboard } from '@/components/ExecutiveDashboard';
 import { APIUsageView } from '@/components/APIUsageView';
+import { CreateProjectModal } from '@/components/CreateProjectModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects, Project } from '@/hooks/useProjects';
 import { useRecentActivity } from '@/hooks/useRecentActivity';
@@ -51,7 +52,7 @@ const Dashboard = () => {
   } = useProjects();
 
   const [view, setView] = useState<DashboardView>('dashboard');
-  const [createNonce, setCreateNonce] = useState(0);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { data: recents = [], isLoading: recentsLoading } = useRecentActivity(20);
 
@@ -112,8 +113,7 @@ const Dashboard = () => {
   };
 
   const triggerNewProject = () => {
-    setView('projects');
-    setCreateNonce((n) => n + 1);
+    setIsCreateModalOpen(true);
   };
 
   return (
@@ -221,7 +221,7 @@ const Dashboard = () => {
                   onDelete={handleDeleteProject}
                   onRename={handleRenameProject}
                   isCreating={isCreating}
-                  openCreateNonce={createNonce}
+                  onCreateClick={() => setIsCreateModalOpen(true)}
                 />
               )}
 
@@ -359,6 +359,13 @@ const Dashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CreateProjectModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onSubmit={handleCreateProject}
+        isLoading={isCreating}
+      />
     </div>
   );
 };

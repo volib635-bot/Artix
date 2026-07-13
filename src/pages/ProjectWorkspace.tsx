@@ -49,6 +49,8 @@ const ProjectWorkspace = () => {
   const [selectedDesign, setSelectedDesign] = useState<string | null>(null);
   const [renameDoc, setRenameDoc] = useState<{ id: string; title: string } | null>(null);
   const [renameDesign, setRenameDesign] = useState<{ id: string; name: string } | null>(null);
+  const [isCreateDocOpen, setIsCreateDocOpen] = useState(false);
+  const [isCreateDesignOpen, setIsCreateDesignOpen] = useState(false);
 
   const project = projects.find((p) => p.id === id);
 
@@ -79,10 +81,10 @@ const ProjectWorkspace = () => {
 
     if (action === 'new-document') {
       setActiveTab('documents');
-      handleCreateDocument();
+      setIsCreateDocOpen(true);
     } else if (action === 'new-design') {
       setActiveTab('architect');
-      handleCreateDesign();
+      setIsCreateDesignOpen(true);
     } else if (action === 'new-vibe') {
       setActiveTab('documents');
       createDocument(id).then((newDoc) => {
@@ -110,23 +112,21 @@ const ProjectWorkspace = () => {
     return null;
   }
 
-  const handleCreateDocument = async () => {
-    if (!id) return null;
+  const handleConfirmCreateDocument = async (title: string) => {
+    if (!id) return;
     try {
-      const newDoc = await createDocument(id);
+      const newDoc = await createDocument({ projectId: id, title });
       setSelectedDocument(newDoc);
       toast.success('New document created');
-      return newDoc;
     } catch (error) {
       toast.error('Failed to create document');
-      return null;
     }
   };
 
-  const handleCreateDesign = async () => {
+  const handleConfirmCreateDesign = async (name: string) => {
     if (!id) return;
     try {
-      const newDesign = await createDesign({ name: 'New System Design', projectId: id });
+      const newDesign = await createDesign({ name, projectId: id });
       setSelectedDesign(newDesign.id);
       toast.success('New system design created');
     } catch (error) {
@@ -260,13 +260,13 @@ const ProjectWorkspace = () => {
             </TabsList>
 
             {activeTab === 'documents' ? (
-              <Button onClick={handleCreateDocument} disabled={isCreatingDoc} className="gap-2">
-                {isCreatingDoc ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              <Button onClick={() => setIsCreateDocOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
                 New Document
               </Button>
             ) : (
-              <Button onClick={handleCreateDesign} disabled={isCreatingDesign} className="gap-2">
-                {isCreatingDesign ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              <Button onClick={() => setIsCreateDesignOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
                 New Design
               </Button>
             )}
@@ -290,7 +290,7 @@ const ProjectWorkspace = () => {
                 <p className="text-muted-foreground text-sm max-w-sm mb-4">
                   Start writing technical specs, PRDs, or documentation. Your work auto-saves as you type.
                 </p>
-                <Button onClick={handleCreateDocument} className="gap-2">
+                <Button onClick={() => setIsCreateDocOpen(true)} className="gap-2">
                   <Plus className="h-4 w-4" />
                   Create Document
                 </Button>
@@ -371,7 +371,7 @@ const ProjectWorkspace = () => {
                 <p className="text-muted-foreground text-sm max-w-sm mb-4">
                   Visually map your system architecture with drag-and-drop nodes, connections, and annotations.
                 </p>
-                <Button onClick={handleCreateDesign} className="gap-2">
+                <Button onClick={() => setIsCreateDesignOpen(true)} className="gap-2">
                   <Plus className="h-4 w-4" />
                   Create System Design
                 </Button>
@@ -450,6 +450,22 @@ const ProjectWorkspace = () => {
           currentName={renameDesign?.name || ''}
           onSave={handleRenameDesign}
           title="Rename System Design"
+        />
+
+        {/* Create Dialogs */}
+        <RenameDialog
+          open={isCreateDocOpen}
+          onOpenChange={setIsCreateDocOpen}
+          currentName="Untitled Document"
+          onSave={handleConfirmCreateDocument}
+          title="Create New Document"
+        />
+        <RenameDialog
+          open={isCreateDesignOpen}
+          onOpenChange={setIsCreateDesignOpen}
+          currentName="New System Design"
+          onSave={handleConfirmCreateDesign}
+          title="Create New System Design"
         />
       </main>
     </div>

@@ -42,17 +42,20 @@ export function useDocuments(projectId?: string) {
   });
 
   const createDocumentMutation = useMutation({
-    mutationFn: async (projectIdArg?: string) => {
+    mutationFn: async (args?: string | { projectId?: string; title?: string }) => {
       if (!user) throw new Error('Not authenticated');
+      
+      const projectId = typeof args === 'string' ? args : args?.projectId;
+      const title = typeof args === 'string' ? 'Untitled Document' : (args?.title || 'Untitled Document');
       
       const { data, error } = await supabase
         .from('documents')
         .insert({
           user_id: user.id,
-          title: 'Untitled Document',
+          title,
           content: '',
           format: 'markdown',
-          project_id: projectIdArg || null,
+          project_id: projectId || null,
         })
         .select()
         .single();
