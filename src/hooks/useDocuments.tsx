@@ -80,12 +80,15 @@ export function useDocuments(projectId?: string) {
     mutationFn: async (updates: Partial<Document> & { id: string }) => {
       const { id, ...rest } = updates;
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('documents')
         .update(rest)
-        .eq('id', id);
+        .eq('id', id)
+        .select('updated_at')
+        .single();
 
       if (error) throw error;
+      return { updated_at: data.updated_at as string };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents', user?.id] });

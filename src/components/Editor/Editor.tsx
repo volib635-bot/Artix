@@ -64,6 +64,7 @@ export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
   const { status, triggerSave } = useAutoSave({
     delay: 1500,
     onSave: handleSave,
+    documentId: document.id,
   });
 
   const handleContentChange = (value: string | undefined) => {

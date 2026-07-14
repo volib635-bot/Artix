@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect, useState } from 'react';
+import { useCallback, useRef, useEffect, useState, useMemo } from 'react';
 import {
   ReactFlow,
   Background,
@@ -27,6 +27,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArchitectureGeneratorDialog } from '@/components/AI/ArchitectureGeneratorDialog';
 import dagre from '@dagrejs/dagre';
+import { createDebouncedSaver } from '@/lib/cache/debouncedSave';
+import { createTabCloseGuard } from '@/lib/cache/tabCloseGuard';
 import { Button } from '@/components/ui/button';
 import { SystemDesign, BoardState } from '@/hooks/useSystemDesigns';
 import { ArchitectNode } from './ArchitectNode';
@@ -145,7 +147,6 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
     : null;
 
   const nodeIdCounter = useRef(nodes.length);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Store onSave callback in ref to prevent infinite loops when reference changes
   const onSaveRef = useRef(onSave);
@@ -153,41 +154,67 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
     onSaveRef.current = onSave;
   }, [onSave]);
 
-  // Auto-save with debounce
+  // --- Shared auto-save with debounce + tab-close protection ---
+  const guardRef = useRef(createTabCloseGuard('/api/save'));
+  const saverRef = useRef(
+    createDebouncedSaver(
+      async (content: string) => {
+        try {
+          setSaveStatus('saving');
+          const boardState: BoardState = JSON.parse(content);
+          await onSaveRef.current(boardState);
+          guardRef.current.markClean(design.id);
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus('idle'), 2000);
+        } catch (err) {
+          console.error('Canvas auto-save failed:', err);
+          setSaveStatus('error');
+        }
+      },
+      1000,
+      `design-${design.id}`,
+    ),
+  );
+
+  // Cleanup on unmount
+  useEffect(() => {
+    const guard = guardRef.current;
+    const saver = saverRef.current;
+    const onBeforeUnload = () => {
+      saver.flushSync();
+      guard.handleBeforeUnload();
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      saver.cancel();
+      guard.destroy();
+    };
+  }, []);
+
   const triggerAutoSave = useCallback(() => {
-    setSaveStatus('saving');
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    saveTimeoutRef.current = setTimeout(async () => {
-      try {
-        const boardState: BoardState = {
-          nodes: nodes.map((n) => ({
-            id: n.id,
-            type: n.data.nodeType,
-            position: n.position,
-            data: {
-              label: n.data.label,
-              description: n.data.description,
-            },
-          })),
-          edges: edges.map((e) => ({
-            id: e.id,
-            source: e.source,
-            target: e.target,
-            label: e.label as string | undefined,
-          })),
-          strokes,
-        };
-        await onSaveRef.current(boardState);
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 2000);
-      } catch (err) {
-        console.error('Canvas auto-save failed:', err);
-        setSaveStatus('error');
-      }
-    }, 1000);
-  }, [nodes, edges, strokes]);
+    const boardState: BoardState = {
+      nodes: nodes.map((n) => ({
+        id: n.id,
+        type: n.data.nodeType,
+        position: n.position,
+        data: {
+          label: n.data.label,
+          description: n.data.description,
+        },
+      })),
+      edges: edges.map((e) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        label: e.label as string | undefined,
+      })),
+      strokes,
+    };
+    const serialized = JSON.stringify(boardState);
+    guardRef.current.markDirty(design.id, serialized);
+    saverRef.current.save(serialized);
+  }, [nodes, edges, strokes, design.id]);
 
   useEffect(() => {
     triggerAutoSave();
