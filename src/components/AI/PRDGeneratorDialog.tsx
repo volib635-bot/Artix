@@ -20,6 +20,7 @@ import { AIError } from '@/lib/ai/types';
 import { useAISettings } from '@/hooks/useAISettings';
 import { usePRDGenerations } from '@/hooks/usePRDGenerations';
 import { useDocuments } from '@/hooks/useDocuments';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { formatDistanceToNow } from 'date-fns';
 import { TokenEstimate } from './TokenEstimate';
 
@@ -48,6 +49,7 @@ export function PRDGeneratorDialog({
   const { isConfigured } = useAISettings();
   const { generations, createGeneration } = usePRDGenerations(projectId);
   const { createDocument, updateDocument } = useDocuments(projectId);
+  const usage = useUsageLimits();
 
   useEffect(() => {
     if (!open) {
@@ -58,6 +60,10 @@ export function PRDGeneratorDialog({
   const handleGenerate = async () => {
     if (!isConfigured) {
       toast.error('Configure an AI provider in Settings first.');
+      return;
+    }
+    if (!usage.aiGenerations.canCreate) {
+      toast.error(`You've used all ${usage.aiGenerations.limit} AI generations this month. Upgrade to Pro for unlimited.`);
       return;
     }
     setIsGenerating(true);

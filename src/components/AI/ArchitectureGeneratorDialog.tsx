@@ -28,6 +28,7 @@ import {
   systemPromptFor,
 } from '@/lib/ai/prompts/architecture';
 import { useAISettings } from '@/hooks/useAISettings';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { algorithmTemplates, systemDesignTemplates } from '@/components/SystemArchitect/AlgorithmNodeTemplates';
 import { BoardState } from '@/hooks/useSystemDesigns';
 
@@ -53,6 +54,7 @@ export function ArchitectureGeneratorDialog({
   onApply,
 }: Props) {
   const { isConfigured } = useAISettings();
+  const usage = useUsageLimits();
   const [docId, setDocId] = useState<string>('none');
   const [text, setText] = useState('');
   const [instructions, setInstructions] = useState('');
@@ -78,6 +80,10 @@ export function ArchitectureGeneratorDialog({
   const handleGenerate = async () => {
     if (!isConfigured) {
       toast.error('Configure AI in Settings first.');
+      return;
+    }
+    if (!usage.aiGenerations.canCreate) {
+      toast.error(`You've used all ${usage.aiGenerations.limit} AI generations this month. Upgrade to Pro for unlimited.`);
       return;
     }
     if (!source.trim()) {

@@ -7,9 +7,11 @@ import { ProjectGrid } from '@/components/ProjectGrid';
 import { ExecutiveDashboard } from '@/components/ExecutiveDashboard';
 import { APIUsageView } from '@/components/APIUsageView';
 import { CreateProjectModal } from '@/components/CreateProjectModal';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { useProjects, Project } from '@/hooks/useProjects';
 import { useRecentActivity } from '@/hooks/useRecentActivity';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -76,7 +78,14 @@ const Dashboard = () => {
 
   if (!user) return null;
 
+  const usage = useUsageLimits();
+  const [upgradePrompt, setUpgradePrompt] = useState<{ feature: string; used: number; limit: number } | null>(null);
+
   const handleCreateProject = async (name: string) => {
+    if (!usage.projects.canCreate) {
+      setUpgradePrompt({ feature: 'project', used: usage.projects.used, limit: usage.projects.limit! });
+      return;
+    }
     try {
       const newProject = await createProject(name);
       toast.success('Project created');
@@ -123,7 +132,7 @@ const Dashboard = () => {
         onViewChange={setView}
         isAuthenticated={!!user}
         onLogout={handleLogout}
-        onUpgrade={() => toast.info('Upgrade plans coming soon.')}
+        onUpgrade={() => navigate('/pricing')}
         collapsed={sidebarCollapsed}
         onToggleCollapsed={() => setSidebarCollapsed((c) => !c)}
       />
@@ -365,6 +374,13 @@ const Dashboard = () => {
         onOpenChange={setIsCreateModalOpen}
         onSubmit={handleCreateProject}
         isLoading={isCreating}
+      />
+      <UpgradePrompt
+        open={!!upgradePrompt}
+        onOpenChange={(open) => { if (!open) setUpgradePrompt(null); }}
+        feature={upgradePrompt?.feature ?? ''}
+        used={upgradePrompt?.used ?? 0}
+        limit={upgradePrompt?.limit ?? 0}
       />
     </div>
   );

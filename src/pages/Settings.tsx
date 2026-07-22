@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Loader2, Save, Key, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Key, Trash2, AlertTriangle, CreditCard, Crown, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,8 +26,10 @@ import {
 } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useSubscription } from '@/hooks/useSubscription';
 import { toast } from 'sonner';
 import { AISettingsCard } from '@/components/AI/AISettingsCard';
+import { supabase } from '@/integrations/supabase/client';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -168,6 +170,9 @@ const Settings = () => {
           <AISettingsCard />
         </motion.div>
 
+        {/* Billing Section */}
+        <BillingSection />
+
 
         {/* Security Section */}
         <motion.div
@@ -294,5 +299,104 @@ const Settings = () => {
     </div>
   );
 };
+
+function BillingSection() {
+  const navigate = useNavigate();
+  const { subscription, isPro, isLoading } = useSubscription();
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const handleManageSubscription = async () => {
+    try {
+      setPortalLoading(true);
+      const { data, error } = await supabase.functions.invoke('create-portal-session', {
+        body: { returnUrl: window.location.href },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        toast.error('Failed to redirect to billing portal');
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Error opening billing portal');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.08 }}
+    >
+      <Card className="border-border bg-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5 text-primary" />
+                Subscription & Billing
+              </CardTitle>
+              <CardDescription>View your plan, usage limits, and payment methods</CardDescription>
+            </div>
+            {isPro && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/30">
+                <Crown className="h-3.5 w-3.5" /> Pro Tier
+              </span>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30 border border-border/50">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    Current Plan: <span className="font-bold capitalize text-primary">{subscription.plan}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Status: <span className="capitalize">{subscription.status}</span>
+                    {subscription.billingCycle && ` (${subscription.billingCycle})`}
+                  </p>
+                  {subscription.currentPeriodEnd && (
+                    <p className="text-[11px] text-muted-foreground mt-1 font-mono">
+                      Renews / Ends: {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+
+                {isPro ? (
+                  <Button
+                    variant="outline"
+                    onClick={handleManageSubscription}
+                    disabled={portalLoading}
+                    className="gap-2"
+                  >
+                    {portalLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ExternalLink className="h-4 w-4" />
+                    )}
+                    Manage Billing
+                  </Button>
+                ) : (
+                  <Button onClick={() => navigate('/pricing')} className="gap-2 bg-gradient-to-r from-primary to-primary/80 hover:opacity-90">
+                    <Crown className="h-4 w-4" />
+                    Upgrade to Pro
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
 
 export default Settings;

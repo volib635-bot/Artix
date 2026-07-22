@@ -8,9 +8,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProjects } from '@/hooks/useProjects';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useSystemDesigns } from '@/hooks/useSystemDesigns';
+import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { Editor, Document } from '@/components/Editor/Editor';
 import { SystemArchitect } from '@/components/SystemArchitect/SystemArchitect';
 import { RenameDialog } from '@/components/RenameDialog';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -51,6 +53,8 @@ const ProjectWorkspace = () => {
   const [renameDesign, setRenameDesign] = useState<{ id: string; name: string } | null>(null);
   const [isCreateDocOpen, setIsCreateDocOpen] = useState(false);
   const [isCreateDesignOpen, setIsCreateDesignOpen] = useState(false);
+  const [upgradePrompt, setUpgradePrompt] = useState<{ feature: string; used: number; limit: number } | null>(null);
+  const usage = useUsageLimits();
 
   const project = projects.find((p) => p.id === id);
 
@@ -114,6 +118,10 @@ const ProjectWorkspace = () => {
 
   const handleConfirmCreateDocument = async (title: string) => {
     if (!id) return;
+    if (!usage.documents.canCreate) {
+      setUpgradePrompt({ feature: 'document', used: usage.documents.used, limit: usage.documents.limit! });
+      return;
+    }
     try {
       const newDoc = await createDocument({ projectId: id, title });
       setSelectedDocument(newDoc);
@@ -125,6 +133,10 @@ const ProjectWorkspace = () => {
 
   const handleConfirmCreateDesign = async (name: string) => {
     if (!id) return;
+    if (!usage.systemDesigns.canCreate) {
+      setUpgradePrompt({ feature: 'system design', used: usage.systemDesigns.used, limit: usage.systemDesigns.limit! });
+      return;
+    }
     try {
       const newDesign = await createDesign({ name, projectId: id });
       setSelectedDesign(newDesign.id);
@@ -468,6 +480,13 @@ const ProjectWorkspace = () => {
           title="Create New System Design"
         />
       </main>
+      <UpgradePrompt
+        open={!!upgradePrompt}
+        onOpenChange={(open) => { if (!open) setUpgradePrompt(null); }}
+        feature={upgradePrompt?.feature ?? ''}
+        used={upgradePrompt?.used ?? 0}
+        limit={upgradePrompt?.limit ?? 0}
+      />
     </div>
   );
 };
