@@ -185,7 +185,7 @@ export function VibeCodingDialog({
             Vibe Coding Prompt Generator
           </DialogTitle>
           <DialogDescription>
-            Turn your document into a targeted prompt for Cursor, Bolt, or v0.
+            Turn your document into a targeted prompt for Cursor, Artix, or Generic AI coders.
           </DialogDescription>
         </DialogHeader>
 
