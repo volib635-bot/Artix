@@ -13,7 +13,8 @@ import {
   FileCode,
   ChevronRight,
   Zap,
-  CreditCard
+  CreditCard,
+  ShieldCheck
 } from 'lucide-react';
 import artixLogo from '@/assets/artix-logo.png';
 
@@ -40,30 +41,42 @@ const features = [
   },
 ];
 
-const formats = [
-  { 
-    icon: FileEdit, 
-    name: 'Markdown', 
-    ext: '.md',
-    color: 'text-blue-400',
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
+const heroHighlights = [
+  {
+    icon: FileText,
+    label: 'Document Forge',
+    sublabel: 'Monaco Specs & Preview',
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-500/10',
+    borderColor: 'border-amber-500/30 hover:border-amber-500/60',
+    glowColor: 'group-hover:shadow-[0_0_20px_rgba(245,158,11,0.2)]',
   },
-  { 
-    icon: FileCode, 
-    name: 'XML', 
-    ext: '.xml',
-    color: 'text-orange-400',
-    bgColor: 'bg-orange-500/10',
-    borderColor: 'border-orange-500/20',
+  {
+    icon: Network,
+    label: 'System Architect',
+    sublabel: 'Auto-Layout Node Canvas',
+    color: 'text-cyan-400',
+    bgColor: 'bg-cyan-500/10',
+    borderColor: 'border-cyan-500/30 hover:border-cyan-500/60',
+    glowColor: 'group-hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]',
   },
-  { 
-    icon: FileText, 
-    name: 'Plain Text', 
-    ext: '.txt',
-    color: 'text-gray-400',
-    bgColor: 'bg-gray-500/10',
-    borderColor: 'border-gray-500/20',
+  {
+    icon: Sparkles,
+    label: 'AI Prompt Suite',
+    sublabel: 'PRD & Vibe Code Engine',
+    color: 'text-purple-400',
+    bgColor: 'bg-purple-500/10',
+    borderColor: 'border-purple-500/30 hover:border-purple-500/60',
+    glowColor: 'group-hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]',
+  },
+  {
+    icon: ShieldCheck,
+    label: 'BYOK Privacy',
+    sublabel: 'Encrypted Client Keys',
+    color: 'text-emerald-400',
+    bgColor: 'bg-emerald-500/10',
+    borderColor: 'border-emerald-500/30 hover:border-emerald-500/60',
+    glowColor: 'group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]',
   },
 ];
 
@@ -130,24 +143,32 @@ const Index = () => {
             </div>
           </motion.div>
 
-          {/* Format Badges */}
+          {/* Expressive Feature Badges */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
-            className="flex justify-center gap-4 mt-12"
+            className="flex flex-wrap justify-center gap-3 md:gap-4 mt-10 max-w-4xl mx-auto"
           >
-            {formats.map((format, index) => (
+            {heroHighlights.map((item, index) => (
               <motion.div
-                key={format.name}
+                key={item.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + index * 0.1 }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${format.bgColor} ${format.borderColor}`}
+                transition={{ delay: 0.35 + index * 0.08 }}
+                className={`group flex items-center gap-3 px-4 py-2.5 rounded-xl border ${item.bgColor} ${item.borderColor} ${item.glowColor} transition-all duration-300 backdrop-blur-md cursor-pointer hover:-translate-y-0.5`}
               >
-                <format.icon className={`h-4 w-4 ${format.color}`} />
-                <span className={`font-medium text-sm ${format.color}`}>{format.name}</span>
-                <span className="text-xs text-slate-400 font-mono">{format.ext}</span>
+                <div className={`p-1.5 rounded-lg bg-background/50 border border-border/40 ${item.color}`}>
+                  <item.icon className="h-4 w-4" />
+                </div>
+                <div className="text-left">
+                  <div className={`font-semibold text-xs md:text-sm tracking-wide ${item.color}`}>
+                    {item.label}
+                  </div>
+                  <div className="text-[11px] text-slate-400 font-medium">
+                    {item.sublabel}
+                  </div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
