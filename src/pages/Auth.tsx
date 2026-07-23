@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail, Lock, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, CheckCircle2, AlertCircle, FileText, Network, Sparkles, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
@@ -273,21 +273,34 @@ const Auth = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="relative z-10 text-center p-8"
+          className="relative z-10 text-center p-8 max-w-md mx-auto"
         >
-          <div className="w-24 h-24 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center mx-auto mb-6 animate-float">
-            <img src={artixLogo} alt="Artix" className="h-14 w-14" />
+          <div className="w-20 h-20 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-6 shadow-[0_0_25px_rgba(245,158,11,0.2)] backdrop-blur-md">
+            <img src={artixLogo} alt="Artix" className="h-12 w-12 object-contain" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-3">
-            Document. Design. Visualize.
+          <h2 className="text-2xl font-bold text-foreground mb-3 leading-tight">
+            The Developer's <span className="gradient-text">Command Center</span>
           </h2>
-          <p className="text-muted-foreground max-w-sm">
-            Your developer command center — write docs, architect systems, and map algorithms in one workspace.
+          <p className="text-slate-300 text-sm leading-relaxed mb-6">
+            Document, design, and architect — all in one unified workspace with AI generation and BYOK key privacy.
           </p>
-          <div className="flex justify-center gap-4 mt-8">
-            <div className="px-3 py-1.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-mono">.md</div>
-            <div className="px-3 py-1.5 rounded-md bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm font-mono">.xml</div>
-            <div className="px-3 py-1.5 rounded-md bg-gray-500/10 border border-gray-500/20 text-gray-400 text-sm font-mono">.txt</div>
+          <div className="flex flex-wrap justify-center gap-2.5">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-medium backdrop-blur-sm">
+              <FileText className="h-3.5 w-3.5" />
+              Document Forge
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-medium backdrop-blur-sm">
+              <Network className="h-3.5 w-3.5" />
+              System Architect
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-medium backdrop-blur-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Prompt Suite
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium backdrop-blur-sm">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              BYOK Privacy
+            </div>
           </div>
         </motion.div>
       </div>
