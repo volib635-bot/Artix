@@ -250,7 +250,8 @@ const Index = () => {
             </div>
           </motion.div>
         </div>
-      </main>
+      </section>
+    </main>
 
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
