@@ -104,5 +104,19 @@ describe('AI Architecture Upgrade Suite', () => {
       expect(vibeSystemPrompt('cursor', 'feature')).toContain(CURSOR_VIBE_SYSTEM_PROMPT);
       expect(vibeSystemPrompt('cursor', 'feature')).toContain('Cursor IDE Prompt Specialist');
     });
+
+    it('should return the high-signal System Architect prompt when mode is system', async () => {
+      const { systemPromptFor, SYSTEM_ARCH_SYSTEM_PROMPT } = await import('../lib/ai/prompts/architecture');
+      expect(systemPromptFor('system')).toBe(SYSTEM_ARCH_SYSTEM_PROMPT);
+      expect(systemPromptFor('system')).toContain('Principal Cloud Infrastructure & Systems Architect');
+      expect(systemPromptFor('system')).toContain('up to 40 nodes');
+    });
+
+    it('should return the high-signal Algorithm Visualizer prompt when mode is algorithm', async () => {
+      const { systemPromptFor, ALGORITHM_ARCH_SYSTEM_PROMPT } = await import('../lib/ai/prompts/architecture');
+      expect(systemPromptFor('algorithm')).toBe(ALGORITHM_ARCH_SYSTEM_PROMPT);
+      expect(systemPromptFor('algorithm')).toContain('Senior Computer Science Educator and Algorithm Visualizer');
+      expect(systemPromptFor('algorithm')).toContain('between 5 and 40 nodes');
+    });
   });
 });

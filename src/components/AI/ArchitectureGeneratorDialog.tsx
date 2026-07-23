@@ -96,8 +96,8 @@ export function ArchitectureGeneratorDialog({
       const res = await callAI({
         system: systemPromptFor(mode),
         messages: [{ role: 'user', content: buildUserPrompt(source, instructions) }],
-        temperature: 0.4,
-        maxTokens: 2000,
+        temperature: 0.3,
+        maxTokens: 4096,
       });
       const parsed = parseArchitectureJSON(res.text);
       setResult(parsed);
@@ -112,25 +112,78 @@ export function ArchitectureGeneratorDialog({
 
   const handleApply = () => {
     if (!result) return;
-    // grid layout
-    const cols = Math.max(1, Math.ceil(Math.sqrt(result.nodes.length)));
-    const gapX = 220;
-    const gapY = 140;
+    
+    // Topological rank-based layout for zero overlapping and clean visual hierarchy
+    const inDegree = new Map<string, number>();
+    const graph = new Map<string, string[]>();
+    result.nodes.forEach((n) => {
+      inDegree.set(n.id, 0);
+      graph.set(n.id, []);
+    });
+    result.edges.forEach((e) => {
+      if (inDegree.has(e.target)) {
+        inDegree.set(e.target, (inDegree.get(e.target) || 0) + 1);
+      }
+      if (graph.has(e.source)) {
+        graph.get(e.source)!.push(e.target);
+      }
+    });
+
+    // Compute ranks using BFS
+    const ranks = new Map<string, number>();
+    const queue: string[] = [];
+    result.nodes.forEach((n) => {
+      if ((inDegree.get(n.id) || 0) === 0) {
+        ranks.set(n.id, 0);
+        queue.push(n.id);
+      }
+    });
+    if (queue.length === 0 && result.nodes.length > 0) {
+      ranks.set(result.nodes[0].id, 0);
+      queue.push(result.nodes[0].id);
+    }
+    while (queue.length > 0) {
+      const curr = queue.shift()!;
+      const currRank = ranks.get(curr) || 0;
+      const neighbors = graph.get(curr) || [];
+      for (const next of neighbors) {
+        if (!ranks.has(next) || ranks.get(next)! < currRank + 1) {
+          ranks.set(next, currRank + 1);
+          queue.push(next);
+        }
+      }
+    }
+
+    // Group nodes by rank
+    const nodesByRank = new Map<number, typeof result.nodes>();
+    result.nodes.forEach((n) => {
+      const r = ranks.get(n.id) || 0;
+      if (!nodesByRank.has(r)) nodesByRank.set(r, []);
+      nodesByRank.get(r)!.push(n);
+    });
+
+    const gapX = 280;
+    const gapY = 160;
     const fallback = mode === 'algorithm' ? 'variable' : 'custom';
 
-    const board: BoardState = {
-      nodes: result.nodes.map((n, i) => {
+    const formattedNodes: BoardState['nodes'] = [];
+    nodesByRank.forEach((nodesInRank, rank) => {
+      nodesInRank.forEach((n, idx) => {
         const known = templateByType.has(n.type);
-        return {
+        formattedNodes.push({
           id: n.id,
           type: known ? n.type : fallback,
           position: {
-            x: 100 + (i % cols) * gapX,
-            y: 100 + Math.floor(i / cols) * gapY,
+            x: 100 + rank * gapX,
+            y: 100 + idx * gapY,
           },
           data: { label: n.label, description: n.description },
-        };
-      }),
+        });
+      });
+    });
+
+    const board: BoardState = {
+      nodes: formattedNodes,
       edges: result.edges
         .filter((e) => e.source !== e.target || true)
         .map((e, i) => ({
