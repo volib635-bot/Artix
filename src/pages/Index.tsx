@@ -48,8 +48,9 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <main id="main-content">
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div 
             className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-20"
@@ -249,7 +250,7 @@ const Index = () => {
             </div>
           </motion.div>
         </div>
-      </section>
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4">

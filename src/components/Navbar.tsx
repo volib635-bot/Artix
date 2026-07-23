@@ -46,6 +46,7 @@ export function Navbar({ isLoggedIn = false, onLogout }: NavbarProps) {
                   variant="ghost"
                   size="icon"
                   onClick={() => navigate('/settings')}
+                  aria-label="Settings"
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <User className="h-4 w-4" />
@@ -54,6 +55,7 @@ export function Navbar({ isLoggedIn = false, onLogout }: NavbarProps) {
                   variant="ghost"
                   size="icon"
                   onClick={onLogout}
+                  aria-label="Sign Out"
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <LogOut className="h-4 w-4" />
@@ -81,6 +83,7 @@ export function Navbar({ isLoggedIn = false, onLogout }: NavbarProps) {
             variant="ghost"
             size="icon"
             className="md:hidden"
+            aria-label="Toggle navigation menu"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

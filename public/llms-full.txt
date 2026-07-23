@@ -1,0 +1,16 @@
+# Artix — Complete Developer Command Center Spec & Capabilities
+
+## Overview
+Artix is a developer platform for technical documentation, system architecture design, algorithm visualization, and AI prompt engineering.
+
+## Architecture
+- Frontend: React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
+- Diagram Engine: @xyflow/react, Dagre layout engine
+- Editor: Monaco Editor
+- Security: Client-side AES-256-GCM encryption with PBKDF2 derivative key derivation
+- Backend: Supabase (PostgreSQL, Auth, RLS policies, Cloud Edge Functions)
+
+## AI Engines
+- PRD Generator: 4 specialized modes (Agile, Technical Spec, Lean MVP, Custom)
+- Vibe Coding Engine: File-precise prompts with relative paths for Cursor, Artix, and Generic LLMs
+- Reflection Engine (`refine.ts`): 2-pass critique flow purging filler prose

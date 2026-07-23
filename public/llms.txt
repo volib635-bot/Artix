@@ -1,0 +1,14 @@
+# Artix — The Developer's Command Center
+
+> Artix is a unified software architecture and documentation workspace. It combines multi-format technical specs, visual node diagramming, algorithm visualization, and AI generation (PRD, Vibe Prompts, Agentic Workflows).
+
+## Core Capabilities
+- [Document Forge](https://artix.dev/#docs): Write specs in Markdown, XML, or Plain Text with Monaco Editor, live preview, and auto-save.
+- [System Architect](https://artix.dev/#architect): Visual node-and-edge system design canvas with auto-layout positioning.
+- [AI Intelligence Suite](https://artix.dev/#ai): Product Requirements Document (PRD) generator, Vibe Coding prompt generator for Cursor and Artix, and multi-agent workflow designer.
+- [BYOK Security & Privacy](https://artix.dev/#security): Client-side AES-256-GCM encryption for self-owned AI provider keys.
+- [PWA & Offline Workspace](https://artix.dev/#pwa): Desktop installable web application with offline storage persistence.
+
+## Pricing
+- [Free Plan](https://artix.dev/pricing): 3 projects, 10 documents, 3 system designs, 5 AI generations per month.
+- [Pro Plan](https://artix.dev/pricing): Unlimited projects, documents, system designs, and AI generations ($8/mo or $72/yr).
