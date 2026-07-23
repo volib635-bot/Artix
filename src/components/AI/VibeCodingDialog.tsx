@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Loader2, Wand2, Save, RefreshCw, History, Copy, Check } from 'lucide-react';
+import { Loader2, Wand2, Save, RefreshCw, History, Copy, Check, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   VibeTarget,
@@ -30,6 +30,9 @@ import { useDocuments } from '@/hooks/useDocuments';
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { formatDistanceToNow } from 'date-fns';
 import { TokenEstimate } from './TokenEstimate';
+
+import { useSystemDesigns } from '@/hooks/useSystemDesigns';
+import { streamRefinement } from '@/lib/ai/refine';
 
 interface VibeCodingDialogProps {
   open: boolean;
@@ -53,11 +56,13 @@ export function VibeCodingDialog({
   const [customInstructions, setCustomInstructions] = useState('');
   const [output, setOutput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const { isConfigured } = useAISettings();
   const { generations, createGeneration } = useVibeGenerations(projectId);
-  const { createDocument, updateDocument } = useDocuments(projectId);
+  const { documents, createDocument, updateDocument } = useDocuments(projectId);
+  const { designs } = useSystemDesigns(projectId);
   const usage = useUsageLimits();
 
   useEffect(() => {
@@ -77,6 +82,11 @@ export function VibeCodingDialog({
     setOutput('');
     let full = '';
     try {
+      const siblingDocs = (documents || [])
+        .filter((d) => d.id !== sourceDocumentId)
+        .map((d) => ({ title: d.title }));
+      const sysDesigns = (designs || []).map((d) => ({ name: d.name }));
+
       const stream = streamAI({
         system: vibeSystemPrompt(target, scope),
         messages: [
@@ -86,10 +96,14 @@ export function VibeCodingDialog({
               sourceTitle,
               sourceMarkdown: sourceContent,
               customInstructions: customInstructions.trim() || undefined,
+              projectContext: {
+                siblingDocs,
+                systemDesigns: sysDesigns,
+              },
             }),
           },
         ],
-        temperature: 0.5,
+        temperature: 0.4,
         maxTokens: 4096,
       });
       for await (const delta of stream) {
@@ -145,93 +159,104 @@ export function VibeCodingDialog({
     }
   };
 
+  const handleRefine = async () => {
+    if (!output.trim() || isGenerating || isRefining) return;
+    setIsRefining(true);
+    let full = '';
+    try {
+      for await (const delta of streamRefinement(output)) {
+        full += delta;
+        setOutput(full);
+      }
+      toast.success('Prompt refined & generic filler purged');
+    } catch {
+      toast.error('Refinement failed');
+    } finally {
+      setIsRefining(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wand2 className="h-5 w-5 text-primary" />
-            Vibe Coding Prompt
+            Vibe Coding Prompt Generator
           </DialogTitle>
           <DialogDescription>
-            Turn this document into a copy-paste prompt for your favorite AI coding tool.
+            Turn your document into a targeted prompt for Cursor, Bolt, or v0.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="generate" className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="generate" className="gap-2">
-              <Wand2 className="h-4 w-4" /> Generate
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-2">
-              <History className="h-4 w-4" /> History ({generations.length})
-            </TabsTrigger>
+        <Tabs defaultValue="generate" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="w-fit">
+            <TabsTrigger value="generate">Generate</TabsTrigger>
+            <TabsTrigger value="history">History ({generations.length})</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="generate" className="flex-1 overflow-hidden flex flex-col gap-4 mt-4">
-            {!isConfigured && (
-              <div className="rounded-md border border-destructive/30 bg-destructive/10 text-destructive text-sm p-3">
-                No AI provider configured. Open <strong>Settings → AI Configuration</strong> to add a key.
-              </div>
-            )}
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label>Target tool</Label>
+          <TabsContent value="generate" className="flex-1 flex flex-col gap-4 mt-4 min-h-0">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <Label className="text-xs">Target Tool</Label>
                 <Select value={target} onValueChange={(v) => setTarget(v as VibeTarget)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {VIBE_TARGETS.map((t) => (
                       <SelectItem key={t.id} value={t.id}>
-                        <div className="flex flex-col">
-                          <span>{t.label}</span>
-                          <span className="text-xs text-muted-foreground">{t.description}</span>
-                        </div>
+                        {t.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label>Scope</Label>
+              <div>
+                <Label className="text-xs">Scope</Label>
                 <Select value={scope} onValueChange={(v) => setScope(v as VibeScope)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {VIBE_SCOPES.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
-                        <div className="flex flex-col">
-                          <span>{s.label}</span>
-                          <span className="text-xs text-muted-foreground">{s.description}</span>
-                        </div>
+                        {s.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label>Custom instructions (optional)</Label>
+              <div>
+                <Label className="text-xs">Custom Focus (optional)</Label>
                 <Textarea
                   value={customInstructions}
                   onChange={(e) => setCustomInstructions(e.target.value)}
-                  placeholder="e.g. dark theme only, no auth, focus on mobile…"
-                  className="min-h-[40px] h-10"
+                  placeholder="e.g. Focus heavily on auth & database migration"
+                  className="h-9 min-h-[36px] py-1 text-xs resize-none"
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <Button onClick={handleGenerate} disabled={isGenerating || !isConfigured} className="gap-2">
+              <Button onClick={handleGenerate} disabled={isGenerating || isRefining} className="gap-2">
                 {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-                {output ? 'Regenerate' : 'Generate Prompt'}
+                Generate prompt
               </Button>
               {output && (
                 <>
-                  <Button variant="outline" onClick={handleGenerate} disabled={isGenerating} className="gap-2">
-                    <RefreshCw className="h-4 w-4" /> Try again
+                  <Button
+                    variant="outline"
+                    onClick={handleRefine}
+                    disabled={isGenerating || isRefining}
+                    className="gap-2 border-primary/40 hover:bg-primary/10"
+                  >
+                    {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                    Refine & Purge Filler
                   </Button>
                   <Button variant="outline" onClick={handleCopy} className="gap-2">
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    {copied ? 'Copied' : 'Copy'}
+                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                    {copied ? 'Copied' : 'Copy prompt'}
                   </Button>
                 </>
               )}

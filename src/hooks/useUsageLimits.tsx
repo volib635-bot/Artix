@@ -31,7 +31,8 @@ export interface UsageLimits {
 export function useUsageLimits(): UsageLimits {
   const { user } = useAuth();
   const { subscription } = useSubscription();
-  const limits = PLAN_LIMITS[subscription.plan];
+  const plan = subscription?.plan && (subscription.plan in PLAN_LIMITS) ? subscription.plan : 'free';
+  const limits = PLAN_LIMITS[plan];
 
   const query = useQuery({
     queryKey: ['usage-counts', user?.id, subscription.plan],

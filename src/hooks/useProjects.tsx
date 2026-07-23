@@ -69,26 +69,46 @@ export function useProjects() {
   const createProjectMutation = useMutation({
     mutationFn: async (name: string) => {
       if (!user) throw new Error('Not authenticated');
+
+      const trimmedName = name.trim();
+      const duplicate = projects.some(
+        (p) => p.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      );
+      if (duplicate) {
+        throw new Error(`A project named "${trimmedName}" already exists.`);
+      }
       
       const { data, error } = await supabase
         .from('projects')
-        .insert({ user_id: user.id, name })
+        .insert({ user_id: user.id, name: trimmedName })
         .select()
         .single();
       
       if (error) throw error;
       return data as Project;
     },
-    onSuccess: () => {
+    onSuccess: (newProject) => {
+      queryClient.setQueryData(['projects', user?.id], (old: Project[] = []) => [
+        { ...newProject, document_count: 0, design_count: 0 },
+        ...old.filter((p) => p.id !== newProject.id),
+      ]);
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 
   const updateProjectMutation = useMutation({
     mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const trimmedName = name.trim();
+      const duplicate = projects.some(
+        (p) => p.id !== id && p.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      );
+      if (duplicate) {
+        throw new Error(`A project named "${trimmedName}" already exists.`);
+      }
+
       const { data, error } = await supabase
         .from('projects')
-        .update({ name })
+        .update({ name: trimmedName })
         .eq('id', id)
         .select()
         .single();

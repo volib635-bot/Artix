@@ -1,53 +1,46 @@
-# Artix - The Developer's Command Center
+# Artix — The Developer's Command Center
 
-Artix is a unified workspace for developers to write documentation, design systems, and visualize algorithms.
+Artix is a modern, unified SaaS platform designed for software engineers, product leads, and architects. It combines multi-format technical documentation, visual system design, algorithm mapping, and high-signal AI prompt engineering into a single high-performance workspace.
 
-## Features
+---
 
-- **Document Forge**: Write in Markdown, XML, or plain text with Monaco editor, live preview, auto-save, and export to PDF/HTML.
-- **System Architect**: Design system architectures visually with drag-and-drop nodes, curved connections, and freehand drawing.
-- **Algorithm Visualizer**: Map out sorting, graph traversal, and data structure algorithms with specialized node templates.
-- **AI Workspace**: Generate PRDs (Product Requirements Documents), multi-agent workflow blueprints, and vibe coding prompts using self-owned AI APIs.
-- **Offline First**: PWA support allows installing Artix as a native desktop or mobile application with offline workspace access.
+## Core Capabilities
 
-## Tech Stack
+### 📄 Document Forge
+- **Multi-Format Technical Editor**: Rich editor powered by Monaco Editor supporting Markdown, XML, and Plain Text formats.
+- **Split-Pane Live Preview**: Synchronized Markdown and XML rendering with high-contrast syntax highlighting.
+- **Resilient Auto-Save Engine**: Debounced background persistence, multi-tab sync via BroadcastChannel, and optimistic lock queueing.
+- **Multi-Format Export**: One-click export to PDF, standalone HTML, and raw Markdown.
 
-- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
-- **Flow Engine**: @xyflow/react (React Flow), Dagre
-- **Backend**: Supabase (Database with Row-Level Security, Authentication)
-- **Local Dev Server**: Node.js & npm
+### 📐 System Architect
+- **Interactive Visual Canvas**: Drag-and-drop node graph canvas powered by React Flow.
+- **Architectural Node Library**: Specialized nodes for Microservices, API Gateways, PostgreSQL Databases, Message Queues, and Cache layers.
+- **Curved Connections & Freehand Drawing**: Custom edge routing and freehand sketch overlays for rapid whiteboarding.
+- **Canvas Export**: High-resolution PNG, SVG, and structured JSON diagram export.
 
-## Development Setup
+### 🧠 AI Intelligence Suite
+- **PRD Generator**: Generates sprint-ready Product Requirements Documents across 4 specialized modes:
+  - **Agile Mode**: Behaviorally complete user stories, Given/When/Then Definition of Done, and T-shirt sizing with complexity justifications.
+  - **Technical Spec Mode**: Executable PostgreSQL schemas, fully typed API endpoint specs with HTTP status codes, edge cases, and security rules.
+  - **Lean MVP Mode**: Riskiest hypothesis identification, explicit scope cuts, and falsifiable validation metrics.
+  - **Custom Mode**: Strictly honors custom user instructions and structural preferences.
+- **Vibe Coding Prompt Generator**: Generates surgical, file-precise prompts for Cursor, Artix, Bolt.new, v0, and generic AI coders with explicit file actions (`[NEW]`, `[MODIFY]`), exact function signatures, and post-change verification commands.
+- **Agentic Workflow Designer**: Blueprints multi-agent systems across 6 architectural patterns (Sequential, Parallel Fan-Out, Orchestrator-Workers, Router, Evaluator-Optimizer, Autonomous ReAct).
+- **Reflection & Refinement Pass**: Built-in 2-pass critique engine (`refine.ts`) that purges generic filler prose ("ensure scalability", "TBD") and expands technical specifications.
 
-Follow these steps to run Artix locally:
+### 🔐 BYOK Security & Key Obfuscation
+- **Bring-Your-Own-Key (BYOK)**: Supports OpenAI, Anthropic Claude, Google Gemini, Groq, OpenRouter, and local Ollama servers.
+- **Client-Side Encryption**: Optional AES-256-GCM encryption with PBKDF2 passphrase derivation, paired with automated client-side key obfuscation to prevent plaintext exposure in local storage.
 
-```sh
-# Step 1: Clone the repository
-git clone <YOUR_GIT_URL>
+### ⚡ PWA & Offline Support
+- **Progressive Web App**: Installable as a native desktop or mobile application.
+- **Offline Workspace**: ServiceWorker precaching for uninterrupted document editing and offline system design.
 
-# Step 2: Install dependencies
-npm install
+---
 
-# Step 3: Configure Environment Variables
-# Copy .env.example or create .env with your Supabase credentials:
-VITE_SUPABASE_PROJECT_ID="your-project-id"
-VITE_SUPABASE_URL="https://your-project-id.supabase.co"
-VITE_SUPABASE_PUBLISHABLE_KEY="your-publishable-anon-key"
+## Technology Stack
 
-# Step 4: Start the development server
-npm run dev
-```
-
-## AI Configuration
-
-Artix is built on a "bring-your-own-key" architecture. Stored API keys are encrypted client-side using `AES-256-GCM` with a passphrase PBKDF2 derivative. Configure your API keys directly in **Settings → AI Configuration** for:
-- OpenAI (GPT-4o, GPT-4o-mini, etc.)
-- Anthropic (Claude 3.5 Sonnet, Haiku, Opus)
-- Google Gemini (Gemini 1.5 Pro, Flash, etc.)
-- Groq (Llama 3.3, 3.1)
-- OpenRouter
-- Ollama (Local LLM server)
-
-## License
-
-MIT - Built for developers.
+- **Frontend**: React 18, Vite 5, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
+- **Editors & Canvas**: Monaco Editor, @xyflow/react (React Flow), Dagre
+- **Backend & Auth**: Supabase PostgreSQL with Row Level Security (RLS) policies and triggers
+- **Edge Architecture**: Supabase Cloud Edge Functions for Stripe subscription billing & portal management

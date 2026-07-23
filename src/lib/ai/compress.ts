@@ -55,7 +55,7 @@ function structuralCompress(md: string): string {
  * Compress `source` so its estimated token count fits within `maxTokens`.
  * Tries structural compression first, then head+tail slicing.
  */
-export function compressSource(source: string, maxTokens = 3000): CompressResult {
+export function compressSource(source: string, maxTokens = 16000): CompressResult {
   const original = source ?? '';
   const originalTokens = estimateTokens(original);
   if (originalTokens <= maxTokens) {

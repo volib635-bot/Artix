@@ -374,6 +374,7 @@ const Dashboard = () => {
         onOpenChange={setIsCreateModalOpen}
         onSubmit={handleCreateProject}
         isLoading={isCreating}
+        existingNames={projects.map((p) => p.name)}
       />
       <UpgradePrompt
         open={!!upgradePrompt}

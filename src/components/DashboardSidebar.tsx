@@ -50,6 +50,8 @@ export function DashboardSidebar({
   const { pathname } = useLocation();
   const { theme, toggleTheme } = useTheme();
 
+  const handleUpgrade = onUpgrade ?? (() => navigate('/pricing'));
+
   const NavBtn = ({
     label,
     icon: Icon,
@@ -160,7 +162,7 @@ export function DashboardSidebar({
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  onClick={onUpgrade}
+                  onClick={handleUpgrade}
                   className="w-full flex justify-center items-center h-10 rounded-full text-amber-300 bg-amber-500/15 border border-amber-400/30 hover:bg-amber-500/25 transition-all"
                   aria-label="Upgrade"
                 >
@@ -171,7 +173,7 @@ export function DashboardSidebar({
             </Tooltip>
           ) : (
             <button
-              onClick={onUpgrade}
+              onClick={handleUpgrade}
               className="w-full group flex items-center gap-2 justify-center px-3 py-2.5 rounded-full text-sm font-medium text-amber-100 bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-amber-500/20 border border-amber-400/30 hover:from-amber-500/30 hover:to-amber-500/30 hover:border-amber-300/50 transition-all shadow-[0_0_20px_-8px_rgba(245,158,11,0.6)]"
             >
               <Sparkles className="h-4 w-4 text-amber-300" />

@@ -55,13 +55,19 @@ ${OUTPUT_CONTRACT}`;
 
 import { compressSource } from '../compress';
 
+export interface AgenticProjectContext {
+  siblingDocs?: { title: string }[];
+  systemDesigns?: { name: string; nodeLabels?: string[] }[];
+}
+
 export function buildAgenticUserPrompt(args: {
   sourceTitle: string;
   sourceMarkdown: string;
   customInstructions?: string;
   maxSourceTokens?: number;
+  projectContext?: AgenticProjectContext;
 }): string {
-  const { sourceTitle, sourceMarkdown, customInstructions, maxSourceTokens = 3000 } = args;
+  const { sourceTitle, sourceMarkdown, customInstructions, maxSourceTokens = 16000, projectContext } = args;
   const { text, compressed, strategy, originalTokens, finalTokens } = compressSource(
     sourceMarkdown,
     maxSourceTokens,
@@ -69,8 +75,21 @@ export function buildAgenticUserPrompt(args: {
   const notice = compressed
     ? `\n\n[Note: source was compressed (${strategy}) from ~${originalTokens} to ~${finalTokens} tokens.]`
     : '';
-  return `Source document title: ${sourceTitle || 'Untitled'}
 
+  let contextBlock = '';
+  if (projectContext) {
+    const docTitles = projectContext.siblingDocs?.map((d) => d.title).filter(Boolean);
+    const designNames = projectContext.systemDesigns?.map((d) => d.name).filter(Boolean);
+    if (docTitles?.length || designNames?.length) {
+      contextBlock = '\nProject Workspace Context:\n';
+      if (docTitles?.length) contextBlock += `- Workspace Documents: ${docTitles.join(', ')}\n`;
+      if (designNames?.length) contextBlock += `- Workspace Architectures: ${designNames.join(', ')}\n`;
+      contextBlock += '\n';
+    }
+  }
+
+  return `Source document title: ${sourceTitle || 'Untitled'}
+${contextBlock}
 Source content:
 """
 ${text}

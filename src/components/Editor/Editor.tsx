@@ -6,6 +6,7 @@ import { MarkdownPreview } from './MarkdownPreview';
 import { DocumentFormat, getLanguageConfig } from './languageMap';
 import { useAutoSave, SaveStatus } from '@/lib/autosave';
 import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -152,6 +153,12 @@ export function Editor({ document, onSave, onBack, projectId }: EditorProps) {
                 value={content}
                 onChange={handleContentChange}
                 theme="vs-dark"
+                loading={
+                  <div className="h-full flex items-center justify-center bg-editor text-muted-foreground gap-2">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <span className="text-sm font-medium">Loading Monaco Editor...</span>
+                  </div>
+                }
                 options={{
                   fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                   fontSize: 14,

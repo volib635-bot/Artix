@@ -5,13 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Code2, 
   Network, 
-  Workflow,
+  Bot,
   Wifi,
   Sparkles,
   FileEdit,
   FileText,
   FileCode,
-  ChevronRight
+  ChevronRight,
+  Zap,
+  CreditCard
 } from 'lucide-react';
 import artixLogo from '@/assets/artix-logo.png';
 
@@ -19,22 +21,22 @@ const features = [
   {
     icon: Code2,
     title: 'Document Forge',
-    description: 'Write in Markdown, XML, or plain text with Monaco editor, live preview, auto-save, and export to PDF/HTML.',
+    description: 'Write technical specs, PRDs, and documentation in Markdown, XML, or plain text with Monaco editor, live preview, and auto-save.',
   },
   {
     icon: Network,
     title: 'System Architect',
-    description: 'Design system architectures visually with drag-and-drop nodes, curved connections, and freehand drawing.',
+    description: 'Design system architectures, microservices, and flow diagrams visually with node templates, curved links, and freehand drawing.',
   },
   {
-    icon: Workflow,
-    title: 'Algorithm Visualizer',
-    description: 'Map out sorting, graph traversal, and data structure algorithms with specialized node templates.',
+    icon: Bot,
+    title: 'AI Intelligence Suite',
+    description: 'Accelerate creation with AI PRD generators, Vibe Coding prompts, Agentic Workflows, and auto-generated system architectures.',
   },
   {
     icon: Wifi,
-    title: 'Works Offline',
-    description: 'Install as a native app. Your work is cached and available even without internet.',
+    title: 'PWA & Offline First',
+    description: 'Install as a native desktop/mobile web app. Auto-saves locally with multi-tab sync so your drafts are safe offline.',
   },
 ];
 
@@ -92,10 +94,10 @@ const Index = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6"
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6"
             >
               <Sparkles className="h-4 w-4" />
-              100% Free • No Credit Card Required
+              AI-Powered Software Architecture & Documentation Workspace
             </motion.div>
 
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
@@ -103,8 +105,8 @@ const Index = () => {
               <span className="block gradient-text">Command Center</span>
             </h1>
 
-            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Document, design, and visualize — all in one workspace. Write in Markdown, architect your systems, and map out algorithms with <span className="text-primary font-semibold">Artix</span>.
+            <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+              Document, design, and architect — all in one unified workspace. Write docs, visual diagram systems, and leverage AI generators with <span className="text-primary font-semibold">Artix</span>.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -119,10 +121,11 @@ const Index = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                onClick={() => navigate('/auth')}
-                className="text-base h-12 px-8"
+                onClick={() => navigate('/pricing')}
+                className="text-base h-12 px-8 border-border/80 hover:border-primary/50"
               >
-                Sign In
+                <CreditCard className="mr-2 h-4 w-4 text-primary" />
+                View Plans
               </Button>
             </div>
           </motion.div>
@@ -144,14 +147,14 @@ const Index = () => {
               >
                 <format.icon className={`h-4 w-4 ${format.color}`} />
                 <span className={`font-medium text-sm ${format.color}`}>{format.name}</span>
-                <span className="text-xs text-muted-foreground font-mono">{format.ext}</span>
+                <span className="text-xs text-slate-400 font-mono">{format.ext}</span>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Editor Preview */}
+      {/* Editor & Canvas Preview */}
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <motion.div
@@ -164,54 +167,59 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-primary/20 blur-3xl opacity-30 -z-10" />
             
             <div className="rounded-xl border border-border bg-card overflow-hidden shadow-2xl shadow-black/20">
-              <div className="flex items-center gap-2 px-4 py-3 bg-secondary/50 border-b border-border">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+              <div className="flex items-center justify-between px-4 py-3 bg-secondary/50 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                  </div>
+                  <span className="text-xs text-slate-300 ml-2 font-mono">architecture_spec.md</span>
                 </div>
-                <span className="text-xs text-muted-foreground ml-2 font-mono">README.md</span>
+                <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  <Zap className="h-3 w-3" /> Auto-Saved & Synced
+                </div>
               </div>
               
               <div className="p-6 font-mono text-sm leading-relaxed">
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">1</span>
-                  <span className="text-blue-400"># Welcome to Artix</span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">1</span>
+                  <span className="text-blue-400"># System Architecture Spec</span>
                 </div>
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">2</span>
-                  <span className="text-muted-foreground"></span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">2</span>
+                  <span className="text-slate-400"></span>
                 </div>
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">3</span>
-                  <span className="text-foreground">Your developer workspace for docs, architecture, and algorithms.</span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">3</span>
+                  <span className="text-slate-200">Unified developer command center for specs, node diagrams, and AI workflows.</span>
                 </div>
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">4</span>
-                  <span className="text-muted-foreground"></span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">4</span>
+                  <span className="text-slate-400"></span>
                 </div>
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">5</span>
-                  <span className="text-blue-400">## Features</span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">5</span>
+                  <span className="text-blue-400">## Core Modules</span>
                 </div>
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">6</span>
-                  <span className="text-muted-foreground"></span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">6</span>
+                  <span className="text-slate-400"></span>
                 </div>
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">7</span>
-                  <span className="text-foreground">- <span className="text-primary">**Document Forge**</span> — Markdown, XML, live preview</span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">7</span>
+                  <span className="text-slate-200">- <span className="text-primary font-bold">**Document Forge**</span> — Monaco split-pane markdown & specs</span>
                 </div>
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">8</span>
-                  <span className="text-foreground">- <span className="text-primary">**System Architect**</span> — visual node canvas</span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">8</span>
+                  <span className="text-slate-200">- <span className="text-primary font-bold">**System Architect**</span> — Interactive node canvas & freehand tools</span>
                 </div>
                 <div className="flex">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">9</span>
-                  <span className="text-foreground">- <span className="text-primary">**Algorithm Visualizer**</span> — sorting, graphs, trees</span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">9</span>
+                  <span className="text-slate-200">- <span className="text-primary font-bold">**AI Intelligence**</span> — PRD, Vibe Prompts & Architecture generation</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-muted-foreground/50 w-8 text-right mr-4">10</span>
+                  <span className="text-slate-500/60 w-8 text-right mr-4">10</span>
                   <span className="w-2 h-5 bg-primary animate-pulse" />
                 </div>
               </div>
@@ -230,10 +238,10 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need to Build
+              Everything You Need to Architect & Ship
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Document, design, visualize, and ship — all from one workspace.
+            <p className="text-slate-300 max-w-2xl mx-auto">
+              Document, design, auto-generate specs, and work offline — all from one unified developer environment.
             </p>
           </motion.div>
 
@@ -245,13 +253,13 @@ const Index = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="p-6 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors group"
+                className="p-6 rounded-xl bg-card border border-border hover:border-primary/40 transition-all group hover:shadow-lg hover:shadow-primary/5"
               >
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                   <feature.icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                <p className="text-sm text-slate-300 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -274,17 +282,17 @@ const Index = () => {
             
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Ready to Build?
+                Ready to Upgrade Your Developer Workflow?
               </h2>
-              <p className="text-muted-foreground mb-8 max-w-lg mx-auto">
-                Start building with Artix — it's free. No setup, no credit card, just your ideas.
+              <p className="text-slate-300 mb-8 max-w-lg mx-auto">
+                Start building with Artix — free tier included. Create documents, map architectures, and supercharge your speed.
               </p>
               <Button 
                 size="lg" 
                 onClick={() => navigate('/auth?mode=signup')}
                 className="text-base h-12 px-8 glow-amber"
               >
-                Get Started — It's Free
+                Get Started Free
               </Button>
             </div>
           </motion.div>
@@ -298,8 +306,8 @@ const Index = () => {
             <img src={artixLogo} alt="Artix" className="w-6 h-6" />
             <span className="font-semibold text-foreground">Artix</span>
           </div>
-          <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Artix. Built for developers.
+          <p className="text-sm text-slate-400">
+            © {new Date().getFullYear()} Artix. Built for modern developers.
           </p>
         </div>
       </footer>

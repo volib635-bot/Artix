@@ -65,11 +65,11 @@ const ProjectWorkspace = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (!projectsLoading && !project && user) {
+    if (!projectsLoading && projects.length > 0 && !project && user) {
       navigate('/dashboard', { replace: true });
       toast.error('Project not found');
     }
-  }, [project, projectsLoading, user, navigate]);
+  }, [project, projects, projectsLoading, user, navigate]);
 
   // Handle action parameter on workspace mount
   useEffect(() => {
@@ -258,7 +258,14 @@ const ProjectWorkspace = () => {
 
       {/* Content */}
       <main className="max-w-5xl mx-auto py-6 px-4">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => {
+            setActiveTab(v as typeof activeTab);
+            setSelectedDocument(null);
+            setSelectedDesign(null);
+          }}
+        >
           <div className="flex items-center justify-between mb-6">
             <TabsList className="grid w-auto grid-cols-2">
               <TabsTrigger value="documents" className="gap-2">
@@ -291,20 +298,18 @@ const ProjectWorkspace = () => {
               </div>
             ) : documents.length === 0 ? (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center py-16 text-center"
+                className="flex flex-col items-center justify-center py-12 px-6 rounded-xl border border-dashed border-border/80 bg-card/40 text-center"
               >
-                <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4">
-                  <FileText className="h-8 w-8 text-blue-400" />
-                </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">No documents yet</h3>
-                <p className="text-muted-foreground text-sm max-w-sm mb-4">
-                  Start writing technical specs, PRDs, or documentation. Your work auto-saves as you type.
+                <FileText className="h-10 w-10 text-primary mb-3" />
+                <h3 className="text-lg font-semibold text-foreground mb-1">No documents in this project</h3>
+                <p className="text-muted-foreground text-sm max-w-md mb-5 leading-relaxed">
+                  Start writing technical specs, PRDs, or architecture notes in Markdown, XML, or plain text.
                 </p>
                 <Button onClick={() => setIsCreateDocOpen(true)} className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Create Document
+                  Create Your First Document
                 </Button>
               </motion.div>
             ) : (
@@ -372,20 +377,18 @@ const ProjectWorkspace = () => {
               </div>
             ) : designs.length === 0 ? (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center py-16 text-center"
+                className="flex flex-col items-center justify-center py-12 px-6 rounded-xl border border-dashed border-border/80 bg-card/40 text-center"
               >
-                <div className="w-16 h-16 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
-                  <GitBranch className="h-8 w-8 text-purple-400" />
-                </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">No system designs yet</h3>
-                <p className="text-muted-foreground text-sm max-w-sm mb-4">
-                  Visually map your system architecture with drag-and-drop nodes, connections, and annotations.
+                <GitBranch className="h-10 w-10 text-primary mb-3" />
+                <h3 className="text-lg font-semibold text-foreground mb-1">No system designs in this project</h3>
+                <p className="text-muted-foreground text-sm max-w-md mb-5 leading-relaxed">
+                  Visually map your system architecture with drag-and-drop nodes, curved connections, and freehand annotations.
                 </p>
                 <Button onClick={() => setIsCreateDesignOpen(true)} className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Create System Design
+                  Create Your First System Design
                 </Button>
               </motion.div>
             ) : (

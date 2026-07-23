@@ -32,7 +32,12 @@ export function UpgradePrompt({ open, onOpenChange, feature, used, limit }: Upgr
       }
     } catch (err: any) {
       console.error('Checkout error:', err);
-      toast.error(err.message || 'Failed to start checkout. Please try again later.');
+      const msg = err?.message || '';
+      if (msg.includes('Failed to send a request') || msg.includes('FunctionsFetchError') || msg.includes('404')) {
+        toast.error('Edge Function not deployed to Supabase yet. Please deploy create-checkout-session to your Supabase project.');
+      } else {
+        toast.error(msg || 'Failed to start checkout. Please try again later.');
+      }
     } finally {
       setLoadingPriceId(null);
     }

@@ -17,6 +17,42 @@ export function isUnlocked(): boolean {
   return memoryCache !== null && memoryPassphrase !== null;
 }
 
+function obfuscateApiKey(key?: string): string | undefined {
+  if (!key) return key;
+  if (key.startsWith('obf:')) return key;
+  try {
+    return `obf:${btoa(key)}`;
+  } catch {
+    return key;
+  }
+}
+
+function deobfuscateApiKey(stored?: string): string | undefined {
+  if (!stored) return stored;
+  if (!stored.startsWith('obf:')) return stored;
+  try {
+    return atob(stored.slice(4));
+  } catch {
+    return stored;
+  }
+}
+
+function sanitizeSettingsForStorage(s: AISettings): AISettings {
+  const clone = JSON.parse(JSON.stringify(s)) as AISettings;
+  if (clone.primary?.apiKey) {
+    clone.primary.apiKey = obfuscateApiKey(clone.primary.apiKey);
+  }
+  return clone;
+}
+
+function restoreSettingsFromStorage(s: AISettings): AISettings {
+  const clone = JSON.parse(JSON.stringify(s)) as AISettings;
+  if (clone.primary?.apiKey) {
+    clone.primary.apiKey = deobfuscateApiKey(clone.primary.apiKey);
+  }
+  return clone;
+}
+
 export function loadSettings(): AISettings {
   if (typeof window === 'undefined') return {};
   if (isEncrypted()) {
@@ -35,11 +71,11 @@ export function loadSettings(): AISettings {
           localStorage.setItem(ENC_KEY, legacyEnc);
           localStorage.removeItem('fenix.ai.settings.enc.v1');
         }
-        return JSON.parse(legacyRaw) as AISettings;
+        return restoreSettingsFromStorage(JSON.parse(legacyRaw) as AISettings);
       }
       return {};
     }
-    return JSON.parse(raw) as AISettings;
+    return restoreSettingsFromStorage(JSON.parse(raw) as AISettings);
   } catch {
     return {};
   }
@@ -61,7 +97,7 @@ export function saveSettings(settings: AISettings): void {
     notifyChange();
     return;
   }
-  localStorage.setItem(KEY, JSON.stringify(settings));
+  localStorage.setItem(KEY, JSON.stringify(sanitizeSettingsForStorage(settings)));
   notifyChange();
 }
 

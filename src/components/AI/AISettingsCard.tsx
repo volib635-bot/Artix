@@ -412,44 +412,6 @@ function EncryptionPanel() {
                   Change passphrase
                 </Button>
               </div>
-
-              <div className="pt-2 border-t border-border">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2 text-destructive">
-                      <Unlock className="h-4 w-4" />
-                      Disable encryption
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Disable encryption?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Keys will be stored in plaintext in this browser. Enter your current
-                        passphrase to confirm.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <Input
-                      type="password"
-                      placeholder="Current passphrase"
-                      value={oldPass}
-                      onChange={(e) => setOldPass(e.target.value)}
-                      className="font-mono"
-                    />
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() =>
-                          run(() => disableEncryption(oldPass), 'Encryption disabled')
-                        }
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Disable
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
             </>
           )}
         </div>

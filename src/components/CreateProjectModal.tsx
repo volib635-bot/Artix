@@ -18,6 +18,7 @@ interface CreateProjectModalProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (name: string) => Promise<void>;
   isLoading?: boolean;
+  existingNames?: string[];
 }
 
 export function CreateProjectModal({
@@ -25,28 +26,33 @@ export function CreateProjectModal({
   onOpenChange,
   onSubmit,
   isLoading,
+  existingNames = [],
 }: CreateProjectModalProps) {
   const [name, setName] = useState('');
   const [touched, setTouched] = useState(false);
 
   // Reset state when modal is opened/closed
   useEffect(() => {
-    if (!open) {
-      setName('');
-      setTouched(false);
-    }
+    setName('');
+    setTouched(false);
   }, [open]);
+
+  const isDuplicate = existingNames.some(
+    (n) => n.trim().toLowerCase() === name.trim().toLowerCase()
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
-    if (!name.trim()) return;
+    if (!name.trim() || isDuplicate) return;
     
     await onSubmit(name.trim());
     onOpenChange(false);
   };
 
-  const hasError = touched && !name.trim();
+  const hasRequiredError = touched && !name.trim();
+  const hasDuplicateError = name.trim().length > 0 && isDuplicate;
+  const hasError = hasRequiredError || hasDuplicateError;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -76,8 +82,10 @@ export function CreateProjectModal({
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                onBlur={() => setTouched(true)}
-                placeholder="My Awesome Project"
+                onBlur={() => {
+                  if (name.trim()) setTouched(true);
+                }}
+                placeholder="e.g. Acme System Specs"
                 maxLength={50}
                 required
                 className={cn(
@@ -86,9 +94,14 @@ export function CreateProjectModal({
                 )}
                 autoFocus
               />
-              {hasError && (
+              {hasRequiredError && (
                 <p className="text-xs text-destructive font-medium mt-1 animate-pulse">
                   Project name is required.
+                </p>
+              )}
+              {hasDuplicateError && (
+                <p className="text-xs text-destructive font-medium mt-1">
+                  A project with this name already exists.
                 </p>
               )}
             </div>
@@ -106,7 +119,7 @@ export function CreateProjectModal({
             </Button>
             <Button 
               type="submit" 
-              disabled={!name.trim() || isLoading}
+              disabled={!name.trim() || isDuplicate || isLoading}
               className="h-10 shadow-md shadow-primary/10"
             >
               {isLoading ? (

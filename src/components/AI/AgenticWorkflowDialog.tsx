@@ -30,6 +30,9 @@ import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { formatDistanceToNow } from 'date-fns';
 import { TokenEstimate } from './TokenEstimate';
 
+import { useSystemDesigns } from '@/hooks/useSystemDesigns';
+import { streamRefinement } from '@/lib/ai/refine';
+
 interface AgenticWorkflowDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -52,11 +55,13 @@ export function AgenticWorkflowDialog({
   const [customInstructions, setCustomInstructions] = useState('');
   const [output, setOutput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isRefining, setIsRefining] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const { isConfigured } = useAISettings();
   const { workflows, createWorkflow } = useAgenticWorkflows(projectId);
-  const { createDocument, updateDocument } = useDocuments(projectId);
+  const { documents, createDocument, updateDocument } = useDocuments(projectId);
+  const { designs } = useSystemDesigns(projectId);
   const usage = useUsageLimits();
 
   useEffect(() => {
@@ -76,6 +81,11 @@ export function AgenticWorkflowDialog({
     setOutput('');
     let full = '';
     try {
+      const siblingDocs = (documents || [])
+        .filter((d) => d.id !== sourceDocumentId)
+        .map((d) => ({ title: d.title }));
+      const sysDesigns = (designs || []).map((d) => ({ name: d.name }));
+
       const stream = streamAI({
         system: agenticSystemPrompt(pattern, agentCount),
         messages: [
@@ -85,6 +95,10 @@ export function AgenticWorkflowDialog({
               sourceTitle,
               sourceMarkdown: sourceContent,
               customInstructions: customInstructions.trim() || undefined,
+              projectContext: {
+                siblingDocs,
+                systemDesigns: sysDesigns,
+              },
             }),
           },
         ],
@@ -144,6 +158,23 @@ export function AgenticWorkflowDialog({
     }
   };
 
+  const handleRefine = async () => {
+    if (!output.trim() || isGenerating || isRefining) return;
+    setIsRefining(true);
+    let full = '';
+    try {
+      for await (const delta of streamRefinement(output)) {
+        full += delta;
+        setOutput(full);
+      }
+      toast.success('Agentic workflow refined & generic filler purged');
+    } catch {
+      toast.error('Refinement failed');
+    } finally {
+      setIsRefining(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
@@ -153,78 +184,74 @@ export function AgenticWorkflowDialog({
             Agentic Workflow Designer
           </DialogTitle>
           <DialogDescription>
-            Turn this document into a multi-agent workflow blueprint you can implement.
+            Design multi-agent architectures, flowcharts, and tool contracts.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="generate" className="flex-1 overflow-hidden flex flex-col">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="generate" className="gap-2">
-              <Bot className="h-4 w-4" /> Generate
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-2">
-              <History className="h-4 w-4" /> History ({workflows.length})
-            </TabsTrigger>
+        <Tabs defaultValue="generate" className="flex-1 flex flex-col min-h-0">
+          <TabsList className="w-fit">
+            <TabsTrigger value="generate">Generate</TabsTrigger>
+            <TabsTrigger value="history">History ({workflows.length})</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="generate" className="flex-1 overflow-hidden flex flex-col gap-4 mt-4">
-            {!isConfigured && (
-              <div className="rounded-md border border-destructive/30 bg-destructive/10 text-destructive text-sm p-3">
-                No AI provider configured. Open <strong>Settings → AI Configuration</strong> to add a key.
-              </div>
-            )}
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label>Pattern</Label>
+          <TabsContent value="generate" className="flex-1 flex flex-col gap-4 mt-4 min-h-0">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div>
+                <Label className="text-xs">Agent Pattern</Label>
                 <Select value={pattern} onValueChange={(v) => setPattern(v as AgenticPattern)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {AGENTIC_PATTERNS.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
-                        <div className="flex flex-col">
-                          <span>{p.label}</span>
-                          <span className="text-xs text-muted-foreground">{p.description}</span>
-                        </div>
+                        {p.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid gap-2">
-                <Label>Target agents: {agentCount}</Label>
-                <Slider
-                  value={[agentCount]}
-                  onValueChange={(v) => setAgentCount(v[0])}
-                  min={1}
-                  max={8}
-                  step={1}
-                  className="mt-2"
-                />
+              <div>
+                <Label className="text-xs">Target Agent Count: {agentCount}</Label>
+                <div className="pt-2">
+                  <Slider
+                    value={[agentCount]}
+                    min={1}
+                    max={8}
+                    step={1}
+                    onValueChange={([val]) => setAgentCount(val)}
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <Label>Custom instructions (optional)</Label>
+              <div>
+                <Label className="text-xs">Custom Focus (optional)</Label>
                 <Textarea
                   value={customInstructions}
                   onChange={(e) => setCustomInstructions(e.target.value)}
-                  placeholder="e.g. must use OpenAI tools API, include human approval step…"
-                  className="min-h-[40px] h-10"
+                  placeholder="e.g. Focus on vector retrieval and tool schema validation"
+                  className="h-9 min-h-[36px] py-1 text-xs resize-none"
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <Button onClick={handleGenerate} disabled={isGenerating || !isConfigured} className="gap-2">
+              <Button onClick={handleGenerate} disabled={isGenerating || isRefining} className="gap-2">
                 {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
-                {output ? 'Regenerate' : 'Design Workflow'}
+                Design Workflow
               </Button>
               {output && (
                 <>
-                  <Button variant="outline" onClick={handleGenerate} disabled={isGenerating} className="gap-2">
-                    <RefreshCw className="h-4 w-4" /> Try again
+                  <Button
+                    variant="outline"
+                    onClick={handleRefine}
+                    disabled={isGenerating || isRefining}
+                    className="gap-2 border-primary/40 hover:bg-primary/10"
+                  >
+                    {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4 text-primary" />}
+                    Refine & Purge Filler
                   </Button>
                   <Button variant="outline" onClick={handleCopy} className="gap-2">
-                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                     {copied ? 'Copied' : 'Copy'}
                   </Button>
                 </>

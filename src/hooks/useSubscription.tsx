@@ -71,6 +71,7 @@ export function useSubscription() {
 
   return {
     subscription,
+    planTier: subscription.plan,
     isPro,
     isPastDue,
     isLoading: query.isLoading,
