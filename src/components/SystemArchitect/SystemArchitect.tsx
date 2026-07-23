@@ -297,18 +297,18 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
       idMap.set(n.id, `node-${nodeIdCounter.current}`);
     });
 
-    // Layered layout via dagre — left→right with generous spacing.
-    const NODE_W = 220;
-    const NODE_H = 90;
+    // Layered layout via dagre — LR for System Architecture, TB for Algorithm Visualizer
+    const NODE_W = 240;
+    const NODE_H = 100;
     const g = new dagre.graphlib.Graph();
-    // Top→bottom tree-like layout with generous spacing for clean edge routing.
+    const rankDir = mode === 'system' ? 'LR' : 'TB';
     g.setGraph({
-      rankdir: 'TB',
+      rankdir: rankDir,
       nodesep: 110,
-      ranksep: 180,
-      edgesep: 40,
-      marginx: 40,
-      marginy: 40,
+      ranksep: 200,
+      edgesep: 50,
+      marginx: 60,
+      marginy: 60,
       ranker: 'network-simplex',
     });
     g.setDefaultEdgeLabel(() => ({}));
@@ -322,10 +322,10 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
     });
     dagre.layout(g);
 
-    // Place laid-out graph below any existing content, starting from the top.
+    // Place laid-out graph cleanly
     const maxY = nodes.reduce((m, n) => Math.max(m, n.position.y + 120), 0);
-    const xOffset = 80;
-    const yOffset = nodes.length > 0 ? maxY + 160 : 60;
+    const xOffset = 100;
+    const yOffset = nodes.length > 0 ? maxY + 160 : 80;
 
     const newNodes: ArchitectFlowNode[] = board.nodes.map((n) => {
       const id = idMap.get(n.id)!;
@@ -337,8 +337,8 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
           x: xOffset + (pos?.x ?? 0) - NODE_W / 2,
           y: yOffset + (pos?.y ?? 0) - NODE_H / 2,
         },
-        sourcePosition: Position.Bottom,
-        targetPosition: Position.Top,
+        sourcePosition: rankDir === 'LR' ? Position.Right : Position.Bottom,
+        targetPosition: rankDir === 'LR' ? Position.Left : Position.Top,
         data: {
           label: n.data.label,
           description: n.data.description,
@@ -369,6 +369,49 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
     setEdges((eds) => [...eds, ...(newEdges as typeof eds)]);
     toast.success(`Added ${newNodes.length} nodes and ${newEdges.length} connections`);
   }, [nodes, setNodes, setEdges]);
+
+  const handleAutoLayout = useCallback(() => {
+    if (nodes.length === 0) return;
+    const NODE_W = 240;
+    const NODE_H = 100;
+    const g = new dagre.graphlib.Graph();
+    const rankDir = mode === 'system' ? 'LR' : 'TB';
+    g.setGraph({
+      rankdir: rankDir,
+      nodesep: 110,
+      ranksep: 200,
+      edgesep: 50,
+      marginx: 80,
+      marginy: 80,
+      ranker: 'network-simplex',
+    });
+    g.setDefaultEdgeLabel(() => ({}));
+
+    nodes.forEach((n) => {
+      g.setNode(n.id, { width: NODE_W, height: NODE_H });
+    });
+    edges.forEach((e) => {
+      g.setEdge(e.source, e.target);
+    });
+
+    dagre.layout(g);
+
+    setNodes((prevNodes) =>
+      prevNodes.map((node) => {
+        const pos = g.node(node.id);
+        return {
+          ...node,
+          position: {
+            x: (pos?.x ?? 0) - NODE_W / 2 + 150,
+            y: (pos?.y ?? 0) - NODE_H / 2 + 120,
+          },
+          sourcePosition: rankDir === 'LR' ? Position.Right : Position.Bottom,
+          targetPosition: rankDir === 'LR' ? Position.Left : Position.Top,
+        };
+      })
+    );
+    toast.success(`Arranged ${nodes.length} nodes cleanly (${rankDir === 'LR' ? 'Horizontal Flow' : 'Vertical Flow'})`);
+  }, [nodes, edges, mode, setNodes]);
 
 
 
@@ -522,6 +565,11 @@ export function SystemArchitect({ design, onSave, onUpdateName, onBack, document
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Button variant="outline" className="gap-2" onClick={handleAutoLayout} title="Auto-arrange nodes cleanly with zero overlap">
+            <LayoutList className="h-4 w-4" />
+            Auto Layout
+          </Button>
           <AnimatePresence mode="wait">
             <motion.div
               key={saveStatus}
