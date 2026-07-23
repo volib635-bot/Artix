@@ -36,11 +36,6 @@ Artix is a modern, unified SaaS platform designed for software engineers, produc
 - **Progressive Web App**: Installable as a native desktop or mobile application.
 - **Offline Workspace**: ServiceWorker precaching for uninterrupted document editing and offline system design.
 
----
+## Documentation
 
-## Technology Stack
-
-- **Frontend**: React 18, Vite 5, TypeScript, Tailwind CSS, shadcn/ui, Framer Motion
-- **Editors & Canvas**: Monaco Editor, @xyflow/react (React Flow), Dagre
-- **Backend & Auth**: Supabase PostgreSQL with Row Level Security (RLS) policies and triggers
-- **Edge Architecture**: Supabase Cloud Edge Functions for Stripe subscription billing & portal management
+For full platform specifications, API reference, architecture details, and changelog, see [DOCS.md](file:///c:/Fenix-main/DOCS.md).
