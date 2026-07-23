@@ -258,6 +258,7 @@ function EncryptionPanel() {
     enableEncryption,
     disableEncryption,
     changePassphrase,
+    clear,
   } = useAISettings();
   const [open, setOpen] = useState(false);
   const [pass1, setPass1] = useState('');
@@ -280,7 +281,7 @@ function EncryptionPanel() {
     }
   };
 
-  // Locked state — show unlock form only.
+  // Locked state — show unlock form and reset vault dialog if passphrase is forgotten
   if (encrypted && !unlocked) {
     return (
       <div className="space-y-3 rounded-md border border-amber-500/40 bg-amber-500/5 p-4">
@@ -306,6 +307,39 @@ function EncryptionPanel() {
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Unlock'}
           </Button>
+        </div>
+
+        <div className="pt-2 border-t border-amber-500/20 flex justify-between items-center">
+          <span className="text-xs text-muted-foreground">Forgot your passphrase?</span>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10">
+                <Trash2 className="h-3 w-3 mr-1" />
+                Reset Key Vault
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset Encrypted AI Key Vault?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Because AES-256-GCM encryption is zero-knowledge, lost passphrases cannot be decrypted.
+                  Resetting will clear the encrypted key vault from this browser so you can enter fresh API keys.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    clear();
+                    toast.success('Key vault reset. You can now add fresh API keys.');
+                  }}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Reset Vault
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     );
