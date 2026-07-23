@@ -12,6 +12,7 @@ Artix is a modern, unified SaaS platform designed for software engineers, techni
 5. [UI & UX Guidelines](#5-ui--ux-guidelines)
 6. [Project File Structure](#6-project-file-structure)
 7. [Engineering Challenges & Technical Solutions](#7-engineering-challenges--technical-solutions)
+8. [Testing & Quality Assurance](#8-testing--quality-assurance)
 
 ---
 
@@ -167,3 +168,11 @@ c:/Fenix-main/
 4. **Generic AI Output** → *Solution*: High-signal persona prompts + 2-pass reflection critique engine (`refine.ts`).
 5. **Stripe Webhook Forgery & Retries** → *Solution*: Signature verification (`constructEventAsync`) + `stripe_events` idempotency table.
 6. **Lighthouse Agentic Browsing Audits** → *Solution*: `public/llms.txt` & `public/llms-full.txt` implementation + W3C accessibility landmarks.
+
+---
+
+## 8. Testing & Quality Assurance
+
+- **Vitest Unit & Integration Suite (`src/test/`)**: 77 unit tests verifying AI registries, 16k context window limits, 2-pass reflection critique engine, 4-tier auto-save queues, key encryption, and Stripe billing limits (`npm run test`).
+- **Playwright E2E & Security Suite (`tests/e2e/`)**: Multi-browser Chromium, Firefox, WebKit specs covering Auth redirects, Dashboard navigation, Document Forge Monaco editor, System Architect auto-layout, XSS vector injection, key obfuscation, and CORS headers (`npm run test:e2e`).
+
