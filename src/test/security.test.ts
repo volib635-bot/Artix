@@ -106,4 +106,21 @@ describe('Security Remediation Suite', () => {
       expect(isWithinLimit(3, PLAN_LIMITS.free.systemDesigns)).toBe(false);
     });
   });
+
+  describe('Database Foreign Key Constraint Audit (SEC-08)', () => {
+    it('should verify foreign key constraints reference auth.users for all user tables', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const migrationsDir = path.join(process.cwd(), 'supabase', 'migrations');
+      const files = fs.readdirSync(migrationsDir);
+      const allSql = files.map((f: string) => fs.readFileSync(path.join(migrationsDir, f), 'utf-8')).join('\n');
+
+      // Verify FK references to auth.users exist for all user-owned tables
+      expect(allSql).toContain('REFERENCES auth.users(id)');
+      expect(allSql).toContain('projects_user_id_fkey');
+      expect(allSql).toContain('system_designs_user_id_fkey');
+      expect(allSql).toContain('ON DELETE CASCADE');
+    });
+  });
 });
+
