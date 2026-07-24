@@ -247,7 +247,7 @@ const ProjectWorkspace = () => {
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="flex items-center h-14 px-4 gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
+          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} aria-label="Back to dashboard">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
@@ -338,7 +338,7 @@ const ProjectWorkspace = () => {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100">
+                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100" aria-label="Document options">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -418,7 +418,7 @@ const ProjectWorkspace = () => {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100">
+                        <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100" aria-label="Design options">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
