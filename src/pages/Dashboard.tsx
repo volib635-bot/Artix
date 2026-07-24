@@ -61,6 +61,8 @@ const Dashboard = () => {
   const [deleteProjectTarget, setDeleteProjectTarget] = useState<Project | null>(null);
   const [renameProjectTarget, setRenameProjectTarget] = useState<Project | null>(null);
   const [renameName, setRenameName] = useState('');
+  const usage = useUsageLimits();
+  const [upgradePrompt, setUpgradePrompt] = useState<{ feature: string; used: number; limit: number } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -77,9 +79,6 @@ const Dashboard = () => {
   }
 
   if (!user) return null;
-
-  const usage = useUsageLimits();
-  const [upgradePrompt, setUpgradePrompt] = useState<{ feature: string; used: number; limit: number } | null>(null);
 
   const handleCreateProject = async (name: string) => {
     if (!usage.projects.canCreate) {
